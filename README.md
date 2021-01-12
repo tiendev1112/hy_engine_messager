@@ -1,2 +1,7 @@
 # hy_engine_messager
-messager base on xmpp
+
+## IOS install && start
+  
+  yarn install
+  npx pod-install
+  react-native run-ios
