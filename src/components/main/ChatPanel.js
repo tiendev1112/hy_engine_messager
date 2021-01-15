@@ -17,6 +17,33 @@ class ChatPanel extends Component {
             <Container>
                 <Content>
                     <List>
+                        {dialogReducer.dialogs.map((dialog,index)=>{
+                            return (
+                                <ListItem avatar key={index}
+                                          onPress={() => {
+                                              navigation.navigate('chatItem',{title:dialog.name,dialog:dialog});
+                                              updateDialogUnreadCount(dialog);
+                                          }}>
+                                    <Left>
+                                        <Thumbnail source={{ uri: dialog.photo }} />
+                                    </Left>
+                                    <Body>
+                                    <Text>{dialog.dialogId}</Text>
+                                    <Text note numberOfLines={2}>{dialog.lastMessage}</Text>
+                                    <Text note></Text>
+                                    </Body>
+                                    <Right>
+                                        <Text note>{new Date(dialog.lastMessageDateSent).toLocaleString()}</Text>
+                                        {
+                                            dialog.unreadMessagesCount>0 &&
+                                            <Badge danger>
+                                                <Text>{dialog.unreadMessagesCount}</Text>
+                                            </Badge>
+                                        }
+                                    </Right>
+                                </ListItem>
+                            )
+                        })}
                         <ListItem avatar onPress={() => {navigation.navigate('chatItem',{title:'user1'})}}>
                             <Left>
                                 <Thumbnail source={{ uri: 'https://s.gravatar.com/avatar/49f4297846f70d6c070b0b604dd99175?size=100&default=retro' }} />
@@ -53,7 +80,9 @@ class ChatPanel extends Component {
 }
 
 const mapStateToProps = (state) => {
-
+    return {
+        dialogReducer: state.DialogReducer
+    }
 }
 
 const mapDispatchProps = (dispatch, props) => ({
