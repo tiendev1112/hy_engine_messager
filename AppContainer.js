@@ -8,6 +8,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {AppState} from 'react-native';
 import {Button} from 'native-base';
 
+//import * as XMPP from 'stanza';
+const stanzaService = require('./src/service');
 import {LoginScreen,ChatPanel,ContactPanel,SettingPanel} from './src/components';
 
 
@@ -87,17 +89,26 @@ class AppContainer extends Component {
     }
 
     componentDidMount() {
+        if(stanzaService.client == undefined){
+            stanzaService.config({username:'euser1',password:'123456'});
+            stanzaService.client.init({});
+            stanzaService.client.xmppClient.connect();
+            console.log(stanzaService);
+        }
         AppState.addEventListener('change', this._handleAppStateChange);
     }
     componentWillUnmount() {
         console.log('Component unmount');
+        stanzaService.client.xmppClient.disconnect();
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
     _handleAppStateChange = (nextAppState) => {
         if(nextAppState =='active'){
             console.log('navigation active ');
+            stanzaService.client.xmppClient.connect({});
         }else{
             console.log('navigation inactive or backend disconnect');
+            stanzaService.client.xmppClient.disconnect({});
         }
         console.log(nextAppState);
         this.setState({appState: nextAppState});
