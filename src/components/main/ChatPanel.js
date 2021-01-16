@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import { Badge,Button,Container, Content, Icon,List, ListItem, Left, Body, Right, Thumbnail, Text } from 'native-base';
+import {updateDialogUnread} from '../../actions/DialogAction';
 class ChatPanel extends Component {
     constructor(props) {
         super(props)
@@ -21,7 +22,7 @@ class ChatPanel extends Component {
                             return (
                                 <ListItem avatar key={index}
                                           onPress={() => {
-                                              navigation.navigate('chatItem',{title:dialog.name,dialog:dialog});
+                                              navigation.navigate('chatItemScreen',{title:dialog.name,dialog:dialog});
                                               updateDialogUnreadCount(dialog);
                                           }}>
                                     <Left>
@@ -86,6 +87,8 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchProps = (dispatch, props) => ({
-
+    updateDialogUnreadCount: (dialog) => {
+        dispatch(updateDialogUnread(dialog))
+    }
 })
 export default connect(mapStateToProps, mapDispatchProps)(ChatPanel)

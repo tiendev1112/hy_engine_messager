@@ -8,9 +8,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {AppState} from 'react-native';
 import {Button} from 'native-base';
 
-//import * as XMPP from 'stanza';
+
+import {LoginScreen,ChatItemScreen,ChatPanel,ContactPanel,SettingPanel} from './src/components';
+import store from './src/store';
+import {updateDialogUnread} from './src/actions/DialogAction'
 const stanzaService = require('./src/service');
-import {LoginScreen,ChatPanel,ContactPanel,SettingPanel} from './src/components';
 
 
 const RootStack = createStackNavigator();
@@ -50,6 +52,31 @@ const MainStackScreen = ()=>{
                 name="Main"
                 component={BottomTabScreen}
                 options={{ headerShown: false }}
+            />
+            <MainStack.Screen
+                name="chatItemScreen"
+                component={ChatItemScreen}
+                options={({ navigation, route }) => ({
+                    title: route.params.title,
+                    headerTitleStyle: {
+                        color: '#3578e5',
+                    },
+                    headerRight: (props)=>{
+                        return <Button  transparent {...props} onPress={() => {
+                            navigation.navigate('videoChatModal')
+                        }}>
+
+                            <Icon name='call' size={30} color='#3578e5'/>
+                        </Button>},
+                    headerLeft: (props)=>{
+                        return <Button  transparent {...props} onPress={() => {
+                            navigation.goBack();
+                            store.dispatch(updateDialogUnread(route.params.dialog));
+                        }}>
+
+                            <Icon name='chevron-back-outline' size={30} color='#3578e5'/>
+                        </Button>}})}
+
             />
         </MainStack.Navigator>
     )

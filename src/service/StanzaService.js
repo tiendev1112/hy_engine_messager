@@ -3,7 +3,7 @@ import * as XMPP from 'stanza';
 
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
-import {getIdFromResource,getUserIdFromResource} from "../service/StanzaUtil";
+import {getIdFromResource,getUserIdFromResource,getUserIdFromJID} from "../service/StanzaUtil";
 import {Message} from '../models/Message';
 import store from '../store'
 
@@ -68,7 +68,7 @@ class StanzaService {
             _id : msg.id,
             text:msg.body,
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
-            user:{}
+            user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
         store.dispatch(pushMessage(msgObj));
         store.dispatch(sortDialogs(msgObj,1));
@@ -87,6 +87,21 @@ class StanzaService {
     }
     messageSentListener(msg){
         console.log("Message Sent>> ")
+        if(msg.receipt){
+            //自动回复收到信息
+        }else{
+            //计入reducer
+            const msgObj = new Message({
+                dialogId:getUserIdFromJID(msg.to),
+                _id : msg.id,
+                text:msg.body,
+                user:{_id:"euser1",avatar: 'http://myxxjs.com/assets/img/logo.png'},
+                createdAt:Date.now()
+            });
+            console.log(msgObj);
+            store.dispatch(pushMessage(msgObj));
+            store.dispatch(sortDialogs(msgObj));
+        }
         console.log(msg)
     }
 
