@@ -95,17 +95,24 @@ const updateStatusMessages = (action, message) => {
 const fetchUsers = (action, users) => {
   const newObjUsers = {}
   action.forEach(elem => {
-    newObjUsers[elem.id] = elem
+    newObjUsers[elem._id] = elem
   })
   return { ...users, ...newObjUsers }
 }
 
+const updateUser = (action, users) => {
+
+    const result = { ...users, [action.user._id]: action.user }
+
+    return result
+}
 export {
-  createDialogByMessage,
-  updateDialog,
-  updateDialogUnread,
-  lazyFetchMessages,
-  sortedDialog,
-  updateStatusMessages,
-  fetchUsers
+    createDialogByMessage,
+    updateDialog,
+    updateDialogUnread,
+    lazyFetchMessages,
+    sortedDialog,
+    updateStatusMessages,
+    fetchUsers,
+    updateUser
 }

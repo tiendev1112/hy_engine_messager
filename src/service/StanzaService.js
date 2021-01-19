@@ -3,9 +3,10 @@ import * as XMPP from 'stanza';
 
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
+import {setCurrentUser} from "../actions/CurrentUserActions";
 import {getIdFromResource,getUserIdFromResource,getUserIdFromJID} from "../service/StanzaUtil";
 import {Message} from '../models/Message';
-import store from '../store'
+import {store} from '../store'
 
 import {xmppConfig} from "../config";
 
@@ -44,8 +45,11 @@ class StanzaService {
     }
     connectListener(msg){
         console.log('XMPP Client is online ',msg);
-        console.log(this);
-
+        store.dispatch(setCurrentUser({
+            _id:this.config.jid.split('@')[0],
+            name: this.config.jid.split('@')[0],
+            avatar: 'http://myxxjs.com/assets/img/logo.png',
+        }));
         this.isConnected =true;
     }
     sessionStartListener(){
@@ -91,11 +95,12 @@ class StanzaService {
             //自动回复收到信息
         }else{
             //计入reducer
+            console.log(store.getState().CurrentUserReducer.user);
             const msgObj = new Message({
                 dialogId:getUserIdFromJID(msg.to),
                 _id : msg.id,
                 text:msg.body,
-                user:{_id:"euser1",avatar: 'http://myxxjs.com/assets/img/logo.png'},
+                user:store.getState().CurrentUserReducer.user,
                 createdAt:Date.now()
             });
             console.log(msgObj);

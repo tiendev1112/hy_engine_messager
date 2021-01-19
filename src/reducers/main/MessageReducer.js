@@ -23,8 +23,11 @@ export default handleActions(
         },
         [PUSH_MESSAGE]: (state, action) => {
             const {message} = action;
-            const copyMessages = state.messages[message.dialogId] || []
-            state.messages = {...state.messages,[message.dialogId]: [message, ...copyMessages]};
-            return state;
+            console.log(message);
+            const copyMessages = state.messages[message.dialogId] || [] ;
+            console.log("copyMessage",copyMessages);
+            //state.messages = {...state.messages,[message.dialogId]: [message, ...copyMessages]};
+
+            return {...state,messages:{...state.messages,[message.dialogId]: [message, ...copyMessages]}};
         }
     }, initialState)

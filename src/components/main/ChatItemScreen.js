@@ -74,7 +74,6 @@ class ChatItemScreen extends Component {
 
     render() {
         const {navigation,route,messageReducer,currentUserReducer,dialogReducer} = this.props;
-
         return (
             <View style={{flex:1,flexDirection:'column'}}>
 
@@ -87,11 +86,7 @@ class ChatItemScreen extends Component {
                     renderMessageText={this.renderMessageText}
                     showUserAvatar={true}
                     onSend={messages=>this.sendMessage(route.params.dialog.dialogId,messages)}
-                    user={{
-                        _id: 'euser1',
-                        name: 'React Native',
-                        avatar: 'https://facebook.github.io/react/img/logo_og.png',
-                    }}
+                    user={currentUserReducer.user}
                 />
             </View>
         )
@@ -101,7 +96,8 @@ class ChatItemScreen extends Component {
 const mapStateToProps = (state) => {
     return {
         messageReducer: state.MessageReducer,
-        dialogReducer: state.DialogReducer
+        dialogReducer: state.DialogReducer,
+        currentUserReducer:state.CurrentUserReducer
     }
 }
 

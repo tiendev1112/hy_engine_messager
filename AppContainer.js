@@ -10,7 +10,7 @@ import {Button} from 'native-base';
 
 
 import {LoginScreen,ChatItemScreen,ChatPanel,ContactPanel,SettingPanel} from './src/components';
-import store from './src/store';
+import {store} from './src/store';
 import {updateDialogUnread} from './src/actions/DialogAction'
 const stanzaService = require('./src/service');
 
@@ -122,6 +122,7 @@ class AppContainer extends Component {
             stanzaService.client.xmppClient.connect();
             console.log(stanzaService);
         }
+
         AppState.addEventListener('change', this._handleAppStateChange);
     }
     componentWillUnmount() {
