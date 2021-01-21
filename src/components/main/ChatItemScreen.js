@@ -19,8 +19,6 @@ class ChatItemScreen extends Component {
 
     }
     sendMessage = (userId,message)=>{
-        console.log(userId)
-        console.log(message)
         stanzaService.client.xmppClient.sendMessage({to:userId+"@"+xmppConfig.host,body:message[0].text});
     }
     renderMessageText = (props) => {
