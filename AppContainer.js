@@ -8,8 +8,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {AppState} from 'react-native';
 import {Button} from 'native-base';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {LoginScreen,ChatItemScreen,ChatPanel,ContactPanel,SettingPanel} from './src/components';
+import localStorageKey from './src/util/LocalStorageKey'
+import {getItemValue,getItemObject,getAllKeys} from './src/util/LocalStorage'
+import {LoginScreen,ChatItemScreen,ChatMediaModal,ChatPanel,ContactPanel,SettingPanel,WelcomeScreen} from './src/components';
 import {store} from './src/store';
 import {updateDialogUnread} from './src/actions/DialogAction'
 const stanzaService = require('./src/service');
@@ -17,6 +20,7 @@ const stanzaService = require('./src/service');
 
 const RootStack = createStackNavigator();
 const LoginStack = createStackNavigator();
+const WelcomeStack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const MainStack = createStackNavigator();
 
@@ -44,7 +48,7 @@ const BottomTabScreen = ()=>{
     )
 }
 
-const MainStackScreen = ()=>{
+const MainStackScreen = (props)=>{
 
     return (
         <MainStack.Navigator initialRouteName="login">
@@ -63,7 +67,7 @@ const MainStackScreen = ()=>{
                     },
                     headerRight: (props)=>{
                         return <Button  transparent {...props} onPress={() => {
-                            navigation.navigate('videoChatModal')
+                            navigation.navigate('chatMediaModal',{dialog:route.params.dialog})
                         }}>
 
                             <Icon name='call' size={30} color='#3578e5'/>
@@ -77,6 +81,11 @@ const MainStackScreen = ()=>{
                             <Icon name='chevron-back-outline' size={30} color='#3578e5'/>
                         </Button>}})}
 
+            />
+            <MainStack.Screen
+                name="chatMediaModal"
+                component={ChatMediaModal}
+                options={{ headerShown: false }}
             />
         </MainStack.Navigator>
     )
@@ -93,10 +102,23 @@ const LoginStackScreen = ()=>{
     )
 
 }
+const WelcomeStackScreen = ()=>{
+    return(
+        <WelcomeStack.Navigator  initialRouteName="welcome">
+            <WelcomeStack.Screen
+                name="welcome"
+                component={WelcomeScreen}
+                options={{ headerShown: false }}
+            />
+        </WelcomeStack.Navigator>
+    )
+
+}
 
 const RootStackScreen = (props)=>{
     return (
         <RootStack.Navigator mode="modal" initialRouteName={props.initialRouteName}>
+            <RootStack.Screen name="welcomeStack" component={WelcomeStackScreen} options={{ headerShown: false }} />
             <RootStack.Screen name="loginStack" component={LoginStackScreen} options={{ headerShown: false }} />
             <RootStack.Screen
                 name="mainStack"
@@ -115,39 +137,41 @@ class AppContainer extends Component {
         }
     }
 
-    componentDidMount() {
-        if(stanzaService.client == undefined){
+    componentDidMount(props) {
+        console.log(this);
+        /*if(stanzaService.client == undefined){
             stanzaService.config({username:'euser1',password:'123456'});
             stanzaService.client.init({});
             stanzaService.client.xmppClient.connect();
             console.log(stanzaService);
-        }
+        }*/
 
+        console.log(getAllKeys())
         AppState.addEventListener('change', this._handleAppStateChange);
     }
     componentWillUnmount() {
         console.log('Component unmount');
-        stanzaService.client.xmppClient.disconnect();
+        //stanzaService.client.xmppClient.disconnect();
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
     _handleAppStateChange = (nextAppState) => {
-        if(nextAppState =='active'){
+        /*if(nextAppState =='active'){
             console.log('navigation active ');
             stanzaService.client.xmppClient.connect({});
         }else{
             console.log('navigation inactive or backend disconnect');
             stanzaService.client.xmppClient.disconnect({});
         }
-        console.log(nextAppState);
+        console.log(nextAppState);*/
         this.setState({appState: nextAppState});
     }
 
     render() {
-        const {} = this.props;
+
         return (
             <SafeAreaProvider>
                 <NavigationContainer >
-                    <RootStackScreen initialRouteName="loginStack"/>
+                    <RootStackScreen initialRouteName="welcomeStack"/>
                 </NavigationContainer>
             </SafeAreaProvider>
         )
