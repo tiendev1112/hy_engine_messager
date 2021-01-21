@@ -1,7 +1,8 @@
 import requestHeaders from './RequestHeaders'
 
 
-const get =(url) =>{
+
+function get(url) {
     return fetch(url, {
         method: 'GET',
         headers: requestHeaders.headers
@@ -10,7 +11,7 @@ const get =(url) =>{
     })
 }
 
-const getCallBack = (url, callBack)=> {
+function getCallBack(url, callBack) {
     fetch(url, {
         method: 'GET',
         headers: requestHeaders.headers
@@ -23,7 +24,7 @@ const getCallBack = (url, callBack)=> {
         })
 }
 
-const post = (url, params)=>{
+function post(url, params) {
     return fetch(url, {
         method: 'POST',
         headers: requestHeaders.headers,
@@ -31,7 +32,7 @@ const post = (url, params)=>{
     }).then((response) => response.json())
 }
 
-const postCallBack = (url, params, callback) => {
+function postCallBack(url, params, callback) {
     fetch(url, {
         method: 'POST',
         headers: requestHeaders.headers,
@@ -45,7 +46,7 @@ const postCallBack = (url, params, callback) => {
         });
 }
 
-const put = (url, params) =>{
+function put(url, params) {
     return fetch(url, {
         method: 'PUT',
         headers: requestHeaders.headers,
@@ -53,7 +54,7 @@ const put = (url, params) =>{
     }).then((response) => response.json())
 }
 
-const putCallBack = (url, params, callback) => {
+function putCallBack(url, params, callback) {
     return fetch(url, {
         method: 'PUT',
         headers: requestHeaders.headers,
@@ -67,7 +68,7 @@ const putCallBack = (url, params, callback) => {
         });
 }
 
-const del = (url, callback)=>{
+function del(url, callback) {
     return fetch(url, {
         method: 'DELETE',
         headers: requestHeaders.headers,
@@ -75,14 +76,24 @@ const del = (url, callback)=>{
 }
 
 
+function postFile(url,params) {
+    let formData = new FormData()
+    let file = { uri: params.imageUrl, type: params.imageType, name: params.imageName }
+    formData.append(params.key, file)
+    return fetch(url, {
+        method: 'POST',
+        headers: requestHeaders.formHeaders,
+        body: formData,
+    }).then((response) => response.json())
+}
 
-
-export  {
-    get,
-    post,
-    put,
-    del,
-    getCallBack,
-    postCallBack,
-    putCallBack
+module.exports = {
+    get: get,
+    post: post,
+    put: put,
+    del: del,
+    postFile: postFile,
+    getCallBack: getCallBack,
+    postCallBack: postCallBack,
+    putCallBack: putCallBack
 }

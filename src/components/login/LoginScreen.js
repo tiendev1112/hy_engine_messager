@@ -3,11 +3,15 @@ import {View} from 'react-native';
 import {Button, Container, Content, Form, Item, Input, Label,Right,Text } from 'native-base';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {connect} from 'react-redux';
-
+import * as action from '../../actions/index'
 
 class LoginScreen extends Component {
     constructor(props) {
         super(props)
+        this.state={
+            userName:'',
+            password:''
+        }
 
     }
 
@@ -17,8 +21,10 @@ class LoginScreen extends Component {
 
     }
 
+
     render() {
-        const {navigation} = this.props;
+
+        const {navigation,login} = this.props;
         return (
 
             <Container>
@@ -35,28 +41,25 @@ class LoginScreen extends Component {
                     </View>
                     <Form>
                         <Item floatingLabel>
-                            <Label>Username</Label>
-                            <Input />
+                            <Label>用户</Label>
+                            <Input onChangeText={(e)=>this.setState({userName:e})}/>
                         </Item>
                         <Item floatingLabel>
-                            <Label>Password</Label>
-                            <Input />
+                            <Label>密码</Label>
+                            <Input onChangeText={(e)=>this.setState({password:e})}/>
                         </Item>
                     </Form>
                     <Button block style={{ margin: 15, marginTop: 50 }} onPress={() => {
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'mainStack' }],
-                        });
+                        login({userName:this.state.userName,password:this.state.password})
                     }}>
-                        <Text>Login</Text>
+                        <Text>登录</Text>
                     </Button>
                     <View  style={{flex: 1, flexDirection:'row',justifyContent: 'space-between'}}>
-                        <Button  transparent light >
-                            <Text>Forget Password ?</Text>
+                        <Button  transparent  >
+                            <Text>忘记密码?</Text>
                         </Button>
                         <Button transparent >
-                            <Text>Sign Up</Text>
+                            <Text>注 册</Text>
                         </Button>
                     </View>
                 </Content>
@@ -68,11 +71,13 @@ class LoginScreen extends Component {
 
 const mapStateToProps = (state) => {
     return {
-
+        loginReducer: state.LoginReducer
     }
 }
 
 const mapDispatchProps = (dispatch, props) => ({
-
+    login: (value) => {
+        dispatch(action.LoginAction.Login({props,value}))
+    },
 })
 export default connect(mapStateToProps, mapDispatchProps)(LoginScreen)
