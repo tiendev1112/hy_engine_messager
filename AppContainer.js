@@ -138,31 +138,31 @@ class AppContainer extends Component {
     }
 
     componentDidMount(props) {
-        console.log(this);
-        /*if(stanzaService.client == undefined){
-            stanzaService.config({username:'euser1',password:'123456'});
-            stanzaService.client.init({});
-            stanzaService.client.xmppClient.connect();
-            console.log(stanzaService);
-        }*/
+        /*console.log(this);
+
 
         console.log(getAllKeys())
+        getItemObject("persist:message").then(res=>console.log(res));
+        getItemObject("persist:dialog").then(res=>console.log(res));*/
         AppState.addEventListener('change', this._handleAppStateChange);
     }
     componentWillUnmount() {
         console.log('Component unmount');
-        //stanzaService.client.xmppClient.disconnect();
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
     _handleAppStateChange = (nextAppState) => {
-        /*if(nextAppState =='active'){
+        console.log(stanzaService.client);
+        if(nextAppState =='active'){
             console.log('navigation active ');
-            stanzaService.client.xmppClient.connect({});
+            if(stanzaService.client != undefined && stanzaService.client.xmppClient != undefined){
+                stanzaService.client.xmppClient.connect();
+            }
         }else{
-            console.log('navigation inactive or backend disconnect');
-            stanzaService.client.xmppClient.disconnect({});
+            console.log('navigation inactive');
+            if(stanzaService.client !=undefined && stanzaService.client.xmppClient !=undefined){
+                stanzaService.client.xmppClient.disconnect();
+            }
         }
-        console.log(nextAppState);*/
         this.setState({appState: nextAppState});
     }
 
@@ -171,7 +171,7 @@ class AppContainer extends Component {
         return (
             <SafeAreaProvider>
                 <NavigationContainer >
-                    <RootStackScreen initialRouteName="welcomeStack"/>
+                    <RootStackScreen initialRouteName="loginStack"/>
                 </NavigationContainer>
             </SafeAreaProvider>
         )

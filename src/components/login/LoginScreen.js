@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View} from 'react-native';
+import {Image,View} from 'react-native';
 import {Button, Container, Content, Form, Item, Input, Label,Right,Text } from 'native-base';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {connect} from 'react-redux';
@@ -9,7 +9,7 @@ class LoginScreen extends Component {
     constructor(props) {
         super(props)
         this.state={
-            userName:'',
+            userName:'13164503107',
             password:''
         }
 
@@ -33,20 +33,22 @@ class LoginScreen extends Component {
                         flex: 1,
                         flexDirection:"row",
                         justifyContent:"flex-end",
-                        paddingRight:20
+                        paddingRight:20,
+                        paddingTop:60
                     }}>
-                        <Button transparent  onPress={() => navigation.goBack()} >
-                            <Icon primary name="md-close-sharp" size={30} />
-                        </Button>
+
+                    </View>
+                    <View  style={{flex: 1, flexDirection:'row',justifyContent: 'center'}}>
+                        <Image style={{width:200,height:200}} source={require('../../../assets/images/logo.png')}  />
                     </View>
                     <Form>
                         <Item floatingLabel>
                             <Label>用户</Label>
-                            <Input onChangeText={(e)=>this.setState({userName:e})}/>
+                            <Input value={this.state.userName} onChangeText={(e)=>this.setState({userName:e})}/>
                         </Item>
                         <Item floatingLabel>
                             <Label>密码</Label>
-                            <Input onChangeText={(e)=>this.setState({password:e})}/>
+                            <Input secureTextEntry={true} onChangeText={(e)=>this.setState({password:e})}/>
                         </Item>
                     </Form>
                     <Button block style={{ margin: 15, marginTop: 50 }} onPress={() => {

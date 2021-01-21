@@ -39,6 +39,7 @@ const getAllKeys = async () => {
     } catch(e) {
 
     }
+    console.log(keys);
     return keys;
 }
 const removeItem = async (key) => {

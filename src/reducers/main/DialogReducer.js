@@ -1,11 +1,12 @@
 import {handleActions} from 'redux-actions';
 import {
-  FETCH_DIALOGS,
-  ADD_DIALOG,
-  SORT_DIALOGS,
-  UPDATE_DIALOG,
-  UPDATE_DIALOG_UNREAD,
-  DELETE_DIALOG
+    FETCH_DIALOGS,
+    ADD_DIALOG,
+    SORT_DIALOGS,
+    UPDATE_DIALOG,
+    UPDATE_DIALOG_UNREAD,
+    DELETE_DIALOG,
+    CLEAR_DIALOG
 } from '../../actions/DialogAction';
 import { createDialogByMessage,updateDialog,updateDialogUnread, sortedDialog } from '../ReducerUtil'
 
@@ -34,6 +35,9 @@ export default handleActions(
                 ...state,
                 dialogs: result
             }
+        },
+        [CLEAR_DIALOG]: (state, action)=>{
+            return initialState;
         },
         [UPDATE_DIALOG_UNREAD]: (state, action) => {
             const result =updateDialogUnread(action,state.dialogs);

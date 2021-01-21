@@ -2,7 +2,7 @@ import {handleActions} from 'redux-actions';
 import {
   PUSH_MESSAGE,
   FETCH_MESSAGES,
-  DELETE_ALL_MESSAGES,
+  CLEAR_MESSAGES,
   LAZY_FETCH_MESSAGES,
   UPDATE_MESSAGES
 } from '../../actions/MessageAction'
@@ -21,11 +21,13 @@ export default handleActions(
             const mergedUpdatedMessages = updateStatusMessages(action, messages)
             return mergedUpdatedMessages;
         },
+        [CLEAR_MESSAGES]: (state, action) => {
+            console.log("clear message")
+            return {...state,messages:{}};
+        },
         [PUSH_MESSAGE]: (state, action) => {
             const {message} = action;
-            console.log(message);
             const copyMessages = state.messages[message.dialogId] || [] ;
-            console.log("copyMessage",copyMessages);
             //state.messages = {...state.messages,[message.dialogId]: [message, ...copyMessages]};
 
             return {...state,messages:{...state.messages,[message.dialogId]: [message, ...copyMessages]}};

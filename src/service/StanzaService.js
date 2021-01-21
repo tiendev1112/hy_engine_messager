@@ -1,6 +1,5 @@
 import * as XMPP from 'stanza';
 
-
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
 import {setCurrentUser} from "../actions/CurrentUserActions";
@@ -9,6 +8,7 @@ import {Message} from '../models/Message';
 import {store} from '../store'
 
 import {xmppConfig} from "../config";
+
 
 class StanzaService {
     constructor(username,password) {
@@ -35,10 +35,12 @@ class StanzaService {
             this.xmppClient.on('session:started', this.sessionStartListener);
             this.xmppClient.on('presence', this.presenceListener);
             this.xmppClient.on('iq', this.iqListener);
+            this.xmppClient.on('iq:get:disco', this.iqDiscoListener);
             this.xmppClient.on('groupchat', this.groupchatListener);
             this.xmppClient.on('message', this.messageListener);
             this.xmppClient.on('message:sent', this.messageSentListener);
             this.xmppClient.on('chat', this.chatListener);
+            this.xmppClient.on('jingle:incoming', this.jingleIncomingListener);
 
         });
 
@@ -54,6 +56,7 @@ class StanzaService {
     }
     sessionStartListener(){
         this.sendPresence();
+        //console.log(navigation)
     }
     disconnectListener(msg){
         console.log('XMPP Client is offline ',msg);
@@ -85,9 +88,17 @@ class StanzaService {
         console.log("IQ >> ")
         console.log(msg)
     }
+    iqDiscoListener(msg){
+        console.log("IQ Disco >> ")
+        console.log(msg)
+    }
     messageListener(msg){
         console.log("Message >> ")
         console.log(msg)
+    }
+    jingleIncomingListener(session, track, stream) {
+        console.log("jingle incoming");
+        console.log(session)
     }
     messageSentListener(msg){
         console.log("Message Sent>> ")
@@ -107,7 +118,6 @@ class StanzaService {
             store.dispatch(pushMessage(msgObj));
             store.dispatch(sortDialogs(msgObj));
         }
-        console.log(msg)
     }
 
 }
