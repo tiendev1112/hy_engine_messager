@@ -11,7 +11,6 @@ import LocalStoragekey from '../util/LocalStorageKey';
 import stanzaService from '../service'
 
 
-export const loginInit = 'LOGIN_INIT';
 
 
 export const Login = (param) => async (dispatch, getState) => {
@@ -35,14 +34,12 @@ export const Login = (param) => async (dispatch, getState) => {
                 impwd : res.result.impwd,
             }
             const localStorageUser = await getItemObject(LocalStoragekey.USER);
-            if(localStorageUser) {
-                if (localStorageUser.jid && localStorageUser.jid == userObj.jid) {
-                    //缓存用户信息与新用户信息一致
-                } else {
-                    //不一致清除redux-persist
-                    dispatch(clearDialog());
-                    dispatch(clearMessage());
-                }
+            if(localStorageUser.jid && localStorageUser.jid == userObj.jid ){
+                //缓存用户信息与新用户信息一致
+            }else{
+                //不一致清除redux-persist
+                dispatch(clearDialog());
+                dispatch(clearMessage());
             }
             await setItemObject(LocalStoragekey.USER,userObj);
             if(stanzaService.client && stanzaService.client.xmppClient){
@@ -53,7 +50,7 @@ export const Login = (param) => async (dispatch, getState) => {
             stanzaService.config({username:userObj.jid,password:userObj.impwd});
             stanzaService.client.init({});
             stanzaService.client.xmppClient.connect();
-            dispatch({type: loginInit, payload: {user:res.result}})
+            dispatch({type: actionTypes.LoginActionType.loginInit, payload: {userLogin:res.result}})
             navigation.navigate('mainStack');
         } else {
             console.log(res)

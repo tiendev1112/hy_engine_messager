@@ -11,7 +11,7 @@ import {xmppConfig} from "../config";
 
 
 class StanzaService {
-    constructor(username,password) {
+    constructor(username,password,navigator) {
         console.log(xmppConfig);
         this.xmppClient = XMPP.createClient({
             transports:xmppConfig.transports,
@@ -23,13 +23,14 @@ class StanzaService {
         this.isConnected = false;
         this.isLogout = false;
     }
-    init() {
+    init(navigation) {
         return new Promise((resolve, reject) => {
             if (this.isConnected) {
                 console.log('XMPP has been connected');
                 return;
             }
-            console.log(this);
+            this.xmppClient.navigation = navigation;
+            //console.log(this);
             this.xmppClient.on('connected', this.connectListener);
             this.xmppClient.on('disconnected', this.disconnectListener);
             this.xmppClient.on('session:started', this.sessionStartListener);
@@ -47,15 +48,13 @@ class StanzaService {
     }
     connectListener(msg){
         console.log('XMPP Client is online ',msg);
-        store.dispatch(setCurrentUser({
-            _id:this.config.jid.split('@')[0],
-            name: this.config.jid.split('@')[0],
-            avatar: 'http://myxxjs.com/assets/img/logo.png',
-        }));
+        console.log(this);
         this.isConnected =true;
     }
     sessionStartListener(){
         this.sendPresence();
+        //console.log(this);
+        this.navigation.navigate('chatMediaModal',{dialog:"user2"})
         //console.log(navigation)
     }
     disconnectListener(msg){
