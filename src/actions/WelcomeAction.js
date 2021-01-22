@@ -2,7 +2,6 @@ import {getItemObject, setItemObject} from '../util/LocalStorage';
 import LocalStorageKey from '../util/LocalStorageKey';
 import {apiHost} from '../config/index';
 import httpRequest from '../util/HttpRequest';
-import {loginInit} from "./LoginAction";
 import * as LoginAction from "./LoginAction"
 export const SHOW_WELCOME = 'SHOW_WELCOME';
 

@@ -10,9 +10,10 @@ import {getItemObject,setItemObject,getAllKeys} from '../util/LocalStorage';
 import LocalStoragekey from '../util/LocalStorageKey';
 import {setCurrentUser} from './CurrentUserActions';
 import stanzaService from '../service'
+import createAction from "redux-actions/es/createAction";
 
 
-
+export const loginInit = 'LOGIN_INIT';
 
 export const Login = (param) => async (dispatch, getState) => {
 
@@ -36,12 +37,14 @@ export const Login = (param) => async (dispatch, getState) => {
             }
             const localStorageUser = await getItemObject(LocalStoragekey.USER);
             dispatch(setCurrentUser({...userObj,avatar: 'http://myxxjs.com/assets/img/logo.png'}));
-            if(localStorageUser.jid && localStorageUser.jid == userObj.jid ){
-                //缓存用户信息与新用户信息一致
-            }else{
-                //不一致清除redux-persist
-                dispatch(clearDialog());
-                dispatch(clearMessage());
+            if(localStorageUser) {
+                if (localStorageUser.jid && localStorageUser.jid == userObj.jid) {
+                    //缓存用户信息与新用户信息一致
+                } else {
+                    //不一致清除redux-persist
+                    dispatch(clearDialog());
+                    dispatch(clearMessage());
+                }
             }
             await setItemObject(LocalStoragekey.USER,userObj);
             if(stanzaService.client && stanzaService.client.xmppClient){
@@ -52,11 +55,11 @@ export const Login = (param) => async (dispatch, getState) => {
             stanzaService.config({username:userObj.jid,password:userObj.impwd});
             stanzaService.client.init({navigation});
             stanzaService.client.xmppClient.connect();
-            dispatch({type: actionTypes.LoginActionType.loginInit, payload: {userLogin:res.result}})
+            dispatch({type: loginInit, payload: {user:res.result}})
             navigation.navigate('mainStack');
         } else {
             console.log(res)
-            Alert.alert("", res.msg, [{text: "确定"}])
+            Alert.alert("",res.msg,[{text: "确定"}])
         }
 
     } catch (err) {
