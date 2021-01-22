@@ -66,5 +66,20 @@ export const Login = (param) => async (dispatch, getState) => {
     }
 
 }
+export const cleanLogin = (props) => async (dispatch, getState) => {
+    const {navigation} = props;
+    const {LoginReducer: { data: { user } } } = getState()
+    const userObj = {
+        accessToken : "",
+        status : user.status,
+        userId : user.userId,
+        userName : user.userName,
+        jid :user.jid,
+        impwd : user.impwd,
+    }
 
+    await setItemObject(LocalStoragekey.USER,userObj);
+    dispatch({ type: loginInit, payload: { user: userObj } })
+    navigation.reset({index:0,routes:[{name:'welcomeStack'}]})
+}
 

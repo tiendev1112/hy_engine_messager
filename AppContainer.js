@@ -100,7 +100,6 @@ const LoginStackScreen = ()=>{
             />
         </LoginStack.Navigator>
     )
-
 }
 const WelcomeStackScreen = ()=>{
     return(
@@ -138,6 +137,7 @@ class AppContainer extends Component {
     }
 
     componentDidMount(props) {
+        console.log(this)
         /*console.log(this);
 
 
@@ -151,7 +151,7 @@ class AppContainer extends Component {
         AppState.removeEventListener('change', this._handleAppStateChange);
     }
     _handleAppStateChange = (nextAppState) => {
-        console.log(stanzaService.client);
+
         if(nextAppState =='active'){
             console.log('navigation active ');
             if(stanzaService.client != undefined && stanzaService.client.xmppClient != undefined){

@@ -25,12 +25,12 @@ class WelcomeScreen extends Component {
             <SafeAreaView style={{backgroundColor:"#445566",flex:1,alignContent:"space-around",justifyContent:"space-around"}}>
                     <View style={styles.container}>
                         <Image style={styles.imageSize} source={require('../../../assets/images/logo.png')}  />
-                        <ActivityIndicator
-                            animating={true}
-                            style={{marginTop:60}}
-                            color='#00ff00'
-                            size="large"
-                        />
+                        {/*<ActivityIndicator*/}
+                            {/*animating={true}*/}
+                            {/*style={{marginTop:60}}*/}
+                            {/*color='#00ff00'*/}
+                            {/*size="large"*/}
+                        {/*/>*/}
                     </View>
             </SafeAreaView>
 

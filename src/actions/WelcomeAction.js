@@ -29,7 +29,6 @@ export const show = (props) => async (dispatch) =>  {
             dispatch({type: LoginAction.loginInit, payload: {user:userObj}})
             props.navigation.reset({index:0,routes:[{name:'mainStack'}]});
         } else {
-            Alert.alert("",res.msg,[{text: "确定"}])
             props.navigation.reset({index:0,routes:[{name:'loginStack'}]});
 
         }

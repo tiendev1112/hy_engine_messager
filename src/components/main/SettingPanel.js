@@ -1,13 +1,17 @@
 import React, {Component} from 'react';
-import {View,Dimensions, StyleSheet} from 'react-native';
-import { Container, Content, Text } from 'native-base';
+import {View, Dimensions, StyleSheet, Alert} from 'react-native';
+import { Button, Container, Content, Icon, Left, Body, Right, List, ListItem, Thumbnail, Separator,Text } from 'native-base'
 import {connect} from 'react-redux';
+import {cleanLogin} from '../../actions/LoginAction'
 
 const {height,width} = Dimensions.get('window');
 
 class SettingPanel extends Component {
     constructor(props) {
         super(props);
+        this.state={
+            confirmModalVisible:false
+        }
 
 
     }
@@ -15,59 +19,167 @@ class SettingPanel extends Component {
     componentDidMount() {
 
     }
+    exitApp=()=> {
+        this.setState({ confirmModalVisible: true })
+    }
+
+    onPressOk=()=> {
+        this.setState({ confirmModalVisible: false })
+        this.props.cleanLogin()
+    }
+
+    onPressCancel=()=> {
+        this.setState({ confirmModalVisible: false })
+    }
 
     render() {
         const {navigation} = this.props;
 
         return (
             <Container>
-                <Content style={{backgroundColor:"#445566"}}>
-                    <View>
-                        <Text>Setting</Text>
-                    </View>
+                <Content style={styles.container}>
+                    <List style={styles.list}>
+                        <Separator style={{height:40}} >
+                            <Text>Accounts</Text>
+                        </Separator>
+                        <ListItem icon onPress={()=>{}}>
+                            <Left>
+                                <Thumbnail small source={{ uri: 'http://myxxjs.com/assets/img/logo.png' }} />
+                            </Left>
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>user2</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon  last onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>add account</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <Separator style={{height:40}} >
+                            <Text>Status</Text>
+                        </Separator>
+                        <ListItem icon last onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Automatic</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+
+
+                        <Separator style={{height:40}} >
+                            <Text>Settings</Text>
+                        </Separator>
+                        <ListItem icon onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Chats</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon  onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Contacts</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon  onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Notifications</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon  onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Experimental</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon  onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>Media</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+                        <ListItem icon last onPress={()=>{}}>
+
+                            <Body>
+                            <Text style={{ fontSize: 14, color: '#777'}}>About</Text>
+                            </Body>
+                            <Right>
+                                <Icon name="ios-chevron-forward" />
+                            </Right>
+                        </ListItem>
+
+                    </List>
+                    <Button full style={styles.button} onPress={this.exitApp}>
+                        <Text style={ styles.buttonTitle}>退出</Text>
+                    </Button>
                 </Content>
+
+                {this.state.confirmModalVisible&& Alert.alert(
+                '',
+                '确认退出应用？',
+                [
+                {text: '确定', onPress:this.onPressOk},
+                    {text: '取消',onPress:this.onPressCancel},
+                ],
+                )
+                }
             </Container>
         )
     }
 }
 const styles = StyleSheet.create({
     container: {
-        position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
-        height: 60,
-        flex: 1,
-        justifyContent: 'center',
+        backgroundColor: "#fff"
+    },
+    list: {
+        backgroundColor: '#fff',
+    },
+    avatarContainer: {
         flexDirection: 'row',
-        zIndex: 100,
+        alignItems: 'center'
     },
-    toolBarItem: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+    userContainer: {
+        marginLeft: 10
     },
-    buttonContainer: {
-        height: 50,
-        width: 50,
-        borderRadius: 25,
-        marginHorizontal: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
+    button: {
+        margin: 15,
+        marginTop: 40,
+        backgroundColor: '#1a50bd'
     },
-    buttonCall: {
-        backgroundColor: 'green',
+    buttonTitle: {
+        color: '#fff',
+        fontSize: 14,
     },
-    buttonCallEnd: {
-        backgroundColor: 'red',
-    },
-    buttonMute: {
-        backgroundColor: 'blue',
-    },
-    buttonSwitch: {
-        backgroundColor: 'orange',
-    },
-});
+    separator:{
+        height:20
+    }
+})
 const mapStateToProps = (state) => {
     return {
 
@@ -75,6 +187,8 @@ const mapStateToProps = (state) => {
 }
 
 const mapDispatchProps = (dispatch, props) => ({
-
+    cleanLogin: () => {
+        dispatch(cleanLogin(props))
+    }
 })
 export default connect(mapStateToProps, mapDispatchProps)(SettingPanel)
