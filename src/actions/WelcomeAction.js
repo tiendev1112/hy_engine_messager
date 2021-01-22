@@ -3,6 +3,8 @@ import LocalStorageKey from '../util/LocalStorageKey';
 import {apiHost} from '../config/index';
 import httpRequest from '../util/HttpRequest';
 import * as LoginAction from "./LoginAction"
+import {Alert} from "react-native";
+import {setCurrentUser} from './CurrentUserActions';
 export const SHOW_WELCOME = 'SHOW_WELCOME';
 
 /**
@@ -11,7 +13,7 @@ export const SHOW_WELCOME = 'SHOW_WELCOME';
 export const show = (props) => async (dispatch) =>  {
    //读取local
     const localUserObj = await getItemObject(LocalStorageKey.USER);
-    console.log(localUserObj);
+    // console.log(localUserObj);
     if(localUserObj) {
         //换取token
         const {accessToken, userId,status,userName,jid,impwd} = localUserObj
@@ -23,13 +25,16 @@ export const show = (props) => async (dispatch) =>  {
         if (res.success) {
             const userObj = {accessToken : res.result.accessToken, status , userId , userName, jid, impwd}
             await setItemObject(LocalStorageKey.USER,userObj);
+             dispatch(setCurrentUser({...userObj,avatar: 'http://myxxjs.com/assets/img/logo.png'}));
             dispatch({type: LoginAction.loginInit, payload: {user:userObj}})
-            props.navigation.navigate('mainStack');
+            props.navigation.reset({index:0,routes:[{name:'mainStack'}]});
         } else {
-            props.navigation.navigate('loginStack');
+            Alert.alert("",res.msg,[{text: "确定"}])
+            props.navigation.reset({index:0,routes:[{name:'loginStack'}]});
+
         }
     }else {
-        props.navigation.navigate('loginStack');
+        props.navigation.reset({index:0,routes:[{name:'loginStack'}]});
     }
 }
 

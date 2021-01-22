@@ -2,7 +2,6 @@ import {Alert} from 'react-native';
 
 import {apiHost} from '../config/index';
 import httpRequest from '../util/HttpRequest';
-import * as actionTypes from '../actionTypes/index';
 import store from '../store';
 import {clearDialog} from './DialogAction';
 import {clearMessage} from './MessageAction';
@@ -10,7 +9,7 @@ import {getItemObject,setItemObject,getAllKeys} from '../util/LocalStorage';
 import LocalStoragekey from '../util/LocalStorageKey';
 import {setCurrentUser} from './CurrentUserActions';
 import stanzaService from '../service'
-import createAction from "redux-actions/es/createAction";
+// import createAction from "redux-actions/es/createAction";
 
 
 export const loginInit = 'LOGIN_INIT';
@@ -56,7 +55,7 @@ export const Login = (param) => async (dispatch, getState) => {
             stanzaService.client.init({navigation});
             stanzaService.client.xmppClient.connect();
             dispatch({type: loginInit, payload: {user:res.result}})
-            navigation.navigate('mainStack');
+            navigation.reset({index:0,routes:[{name:'mainStack'}]})
         } else {
             console.log(res)
             Alert.alert("",res.msg,[{text: "确定"}])
