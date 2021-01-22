@@ -8,6 +8,7 @@ import {clearDialog} from './DialogAction';
 import {clearMessage} from './MessageAction';
 import {getItemObject,setItemObject,getAllKeys} from '../util/LocalStorage';
 import LocalStoragekey from '../util/LocalStorageKey';
+import {setCurrentUser} from './CurrentUserActions';
 import stanzaService from '../service'
 
 
@@ -34,6 +35,7 @@ export const Login = (param) => async (dispatch, getState) => {
                 impwd : res.result.impwd,
             }
             const localStorageUser = await getItemObject(LocalStoragekey.USER);
+            dispatch(setCurrentUser({...userObj,avatar: 'http://myxxjs.com/assets/img/logo.png'}));
             if(localStorageUser.jid && localStorageUser.jid == userObj.jid ){
                 //缓存用户信息与新用户信息一致
             }else{
@@ -48,7 +50,7 @@ export const Login = (param) => async (dispatch, getState) => {
 
 
             stanzaService.config({username:userObj.jid,password:userObj.impwd});
-            stanzaService.client.init({});
+            stanzaService.client.init({navigation});
             stanzaService.client.xmppClient.connect();
             dispatch({type: actionTypes.LoginActionType.loginInit, payload: {userLogin:res.result}})
             navigation.navigate('mainStack');
