@@ -171,7 +171,7 @@ class AppContainer extends Component {
         return (
             <SafeAreaProvider>
                 <NavigationContainer >
-                    <RootStackScreen initialRouteName="loginStack"/>
+                    <RootStackScreen initialRouteName="welcomeStack"/>
                 </NavigationContainer>
             </SafeAreaProvider>
         )

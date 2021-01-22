@@ -1,32 +1,20 @@
 import {handleActions} from 'redux-actions';
-import * as actionTypes from "../../actionTypes"
+import * as LoginAction from "../../actions/LoginAction"
 
 const initialState = {
     data:{
-        accessToken:'',
-        status:'',
-        type:'',
-        userId:'',
-        userName:'',
-        jid:'',
-        impwd:''
+      user:{}
 
     }
 };
 
 export default handleActions(
     {
-        [actionTypes.LoginActionType.loginInit]: (state, action) => {
-            const {userLogin:{accessToken,status,type,userId,userName,jid,impwd}}=action.payload
+        [LoginAction.loginInit]: (state, action) => {
+            const {user}=action.payload
             return {
                 data: {
-                    accessToken,
-                    status,
-                    type,
-                    userId,
-                    userName,
-                    jid,
-                    impwd
+                   user
                 }
             }
         },
