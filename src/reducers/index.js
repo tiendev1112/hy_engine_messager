@@ -9,6 +9,7 @@ import DialogReducer from './main/DialogReducer';
 import MessageReducer from './main/MessageReducer';
 import CurrentUserReducer from './main/CurrentUserReducer';
 import UserReducer from './main/UserReducer';
+import ChatMediaReducer from './main/ChatMediaReducer';
 
 
 const messagePersistConfig = {
@@ -25,6 +26,7 @@ export default combineReducers({
     MessageReducer:persistReducer(messagePersistConfig, MessageReducer),
     DialogReducer:persistReducer(dialogPersistConfig, DialogReducer),
     CurrentUserReducer,
-    UserReducer
+    UserReducer,
+    ChatMediaReducer
 
 })

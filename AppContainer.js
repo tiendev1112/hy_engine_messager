@@ -24,6 +24,7 @@ const WelcomeStack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const MainStack = createStackNavigator();
 
+
 const BottomTabScreen = ()=>{
     return(
         <Tab.Navigator tabBarOptions={{
@@ -137,7 +138,7 @@ class AppContainer extends Component {
     }
 
     componentDidMount(props) {
-        console.log(this)
+        console.log(global);
         /*console.log(this);
 
 

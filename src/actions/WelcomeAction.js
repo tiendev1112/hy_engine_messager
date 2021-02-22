@@ -30,6 +30,7 @@ export const show = (props) => async (dispatch) =>  {
             dispatch(setCurrentUser({...userObj,avatar: 'http://myxxjs.com/assets/img/logo.png'}));
             stanzaService.config({username:userObj.jid,password:userObj.impwd});
             stanzaService.client.init(props.navigation);
+            console.log(stanzaService.client.xmppClient);
             stanzaService.client.xmppClient.connect();
             dispatch({type: LoginAction.loginInit, payload: {user:userObj}})
             props.navigation.reset({index:0,routes:[{name:'mainStack'}]});

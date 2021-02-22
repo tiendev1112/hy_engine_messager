@@ -2,6 +2,7 @@ import * as XMPP from 'stanza';
 
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
+import {setMediaSession,setIncomingFlag} from "../actions/ChatMediaAction";
 import {setCurrentUser} from "../actions/CurrentUserActions";
 import {getIdFromResource,getUserIdFromResource,getUserIdFromJID} from "../service/StanzaUtil";
 import {Message} from '../models/Message';
@@ -38,10 +39,30 @@ class StanzaService {
             this.xmppClient.on('iq', this.iqListener);
             this.xmppClient.on('iq:get:disco', this.iqDiscoListener);
             this.xmppClient.on('groupchat', this.groupchatListener);
+            this.xmppClient.on('chat', this.chatListener);
             this.xmppClient.on('message', this.messageListener);
             this.xmppClient.on('message:sent', this.messageSentListener);
-            this.xmppClient.on('chat', this.chatListener);
+
             this.xmppClient.on('jingle:incoming', this.jingleIncomingListener);
+            this.xmppClient.on('jingle:ringing', this.jingleRingListener);
+            this.xmppClient.on('jingle:outgoing', this.jingleOutgoListener);
+            this.xmppClient.on('jingle:terminated', this.jingleTerminatedListener);
+            this.xmppClient.on('iq:set:jingle', (data)=>{
+                console.log('iq:set:jingle',data);
+            });
+            this.xmppClient.on('jingle:created', (session)=>{
+                console.log('jingle:created', session);
+            });
+
+            /*this.xmppClient.jingle.on('peerTrackAdded', function (session, track, stream) {
+                console.log('peerTrackAdded',session);
+                console.log('peerTrackAdded',track);
+                console.log('peerTrackAdded',stream);
+            });*/
+            this.xmppClient.jingle.on('log', console.log);
+            this.xmppClient.on('raw:outgoing', function (data) {
+                console.log("out>>",data.toString());
+            });
 
         });
 
@@ -53,9 +74,9 @@ class StanzaService {
     }
     sessionStartListener(){
         this.sendPresence();
-        //console.log(this);
-        this.navigation.navigate('chatMediaModal',{dialog:"user2"})
-        //console.log(navigation)
+        this.jingle.resetICEServers();
+        this.discoverICEServers();
+        console.log(this);
     }
     disconnectListener(msg){
         console.log('XMPP Client is offline ',msg);
@@ -76,6 +97,7 @@ class StanzaService {
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
             user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
+        console.log(msgObj);
         store.dispatch(pushMessage(msgObj));
         store.dispatch(sortDialogs(msgObj,1));
     }
@@ -93,11 +115,36 @@ class StanzaService {
     }
     messageListener(msg){
         console.log("Message >> ")
-        console.log(msg)
+        console.log(msg);
+        const msgObj = new Message({
+            dialogId:getUserIdFromResource(msg.from),
+            _id : msg.id,
+            text:msg.body,
+            createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
+            user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
+        });
+        console.log(msgObj);
+        store.dispatch(pushMessage(msgObj));
+        store.dispatch(sortDialogs(msgObj,1));
     }
-    jingleIncomingListener(session, track, stream) {
+    jingleIncomingListener(session) {
         console.log("jingle incoming");
-        console.log(session)
+        console.log(session);
+        store.dispatch(setIncomingFlag(true));
+        store.dispatch(setMediaSession(session));
+        this.navigation.navigate('chatMediaModal',{dialog:"user2",sid:session.sid,isIncoming:true})
+
+
+    }
+    jingleOutgoListener(session){
+        console.log("jingle outgoing");
+        store.dispatch(setMediaSession(session));
+    }
+    jingleTerminatedListener(session,track,stream){
+        console.log("jingle terminated");
+    }
+    jingleRingListener(session,track,stream){
+        console.log("jingle ringing");
     }
     messageSentListener(msg){
         console.log("Message Sent>> ")
