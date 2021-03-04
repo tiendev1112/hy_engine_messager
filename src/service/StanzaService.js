@@ -1,10 +1,21 @@
 import * as XMPP from 'stanza';
+import {
+    RTCPeerConnection,
+    RTCIceCandidate,
+    RTCSessionDescription,
+    RTCView,
+    MediaStream,
+    MediaStreamTrack,
+    mediaDevices,
+    registerGlobals
+} from 'react-native-webrtc';
 
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
 import {setMediaSession,setIncomingFlag} from "../actions/ChatMediaAction";
 import {setCurrentUser} from "../actions/CurrentUserActions";
 import {getIdFromResource,getUserIdFromResource,getUserIdFromJID} from "../service/StanzaUtil";
+import * as stanzaConst from './StanzaConst';
 import {Message} from '../models/Message';
 import {store} from '../store'
 
@@ -21,6 +32,7 @@ class StanzaService {
             password: password,
             allowResumption: false
         });
+        this.pc = null;
         this.isConnected = false;
         this.isLogout = false;
     }
@@ -116,25 +128,45 @@ class StanzaService {
     messageListener(msg){
         console.log("Message >> ")
         console.log(msg);
-        const msgObj = new Message({
+        let msgBodyObj ;
+        try{
+            msgBodyObj =JSON.parse(msg.body)
+        }catch (e){
+            msgBodyObj={
+                type :stanzaConst.MSG_TYPE_TEXT,
+                text : msg.body
+            }
+        }
+        let msgObj = new Message({
             dialogId:getUserIdFromResource(msg.from),
             _id : msg.id,
-            text:msg.body,
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
             user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
+        if(msgBodyObj.type = stanzaConst.MSG_TYPE_TEXT){
+            msgObj = {...msgObj,text:msgBodyObj.text}
+        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_ANSWER){
+            this.pc.setRemoteDescription(new RTCSessionDescription(msgObj.text));
+        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
+            this.pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_OFFER){
+            this.navigation.navigate('chatMediaModal',{dialog:msg.from,isIncoming:true})
+            this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
+                return this.pc.createAnswer();
+            }).then((answer)=>{
+                this.pc.setLocalDescription(answer);
+            })
+        }
         console.log(msgObj);
         store.dispatch(pushMessage(msgObj));
         store.dispatch(sortDialogs(msgObj,1));
     }
     jingleIncomingListener(session) {
         console.log("jingle incoming");
-        console.log(session);
+        console.log(session.parent.sessions);
         store.dispatch(setIncomingFlag(true));
-        store.dispatch(setMediaSession(session));
+        store.dispatch(setMediaSession(session.parent.sessions[0]));
         this.navigation.navigate('chatMediaModal',{dialog:"user2",sid:session.sid,isIncoming:true})
-
-
     }
     jingleOutgoListener(session){
         console.log("jingle outgoing");

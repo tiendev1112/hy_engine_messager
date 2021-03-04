@@ -1,14 +1,15 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {Animated,Easing,Image,View,TouchableOpacity} from 'react-native';
-import { Container, Content, Icon,List, ListItem, Left, Body, Right, Thumbnail, Text } from 'native-base';
+import {Animated,Easing,Image,View,TextInput,TouchableOpacity} from 'react-native';
+import { Container, Content, Icon,List, ListItem, Left, Body, Right, Thumbnail } from 'native-base';
 import {
     Bubble,GiftedChat,Message,MessageText
 } from 'react-native-gifted-chat';
 
 import {updateDialogUnread} from '../../actions/DialogAction';
-const stanzaService = require('../../service');
 import {xmppConfig} from "../../config";
+import * as stanzaConst from '../../service/StanzaConst';
+const stanzaService = require('../../service');
 
 class ChatItemScreen extends Component {
     constructor(props) {
@@ -18,8 +19,12 @@ class ChatItemScreen extends Component {
     componentDidMount() {
 
     }
-    sendMessage = (userId,message)=>{
-        stanzaService.client.xmppClient.sendMessage({to:userId+"@"+xmppConfig.host,body:message[0].text});
+    sendTextMessage = (userId,message)=>{
+        const msgObj = {
+            type:stanzaConst.MSG_TYPE_TEXT,
+            text:message[0].text
+        }
+        stanzaService.client.xmppClient.sendMessage({to:userId+"@"+xmppConfig.host,body:JSON.stringify(msgObj)});
     }
     renderMessageText = (props) => {
 
@@ -70,10 +75,12 @@ class ChatItemScreen extends Component {
         );
     }
 
+
     render() {
         const {navigation,route,messageReducer,currentUserReducer,dialogReducer} = this.props;
         return (
-            <View style={{flex:1,flexDirection:'column'}}>
+            <View style={{flex:1,flexDirection:'column',justifyContent:"center",
+                }}>
 
                 <GiftedChat
                     alignTop
@@ -83,7 +90,7 @@ class ChatItemScreen extends Component {
                     renderMessage={this.renderMessage}
                     renderMessageText={this.renderMessageText}
                     showUserAvatar={true}
-                    onSend={messages=>this.sendMessage(route.params.dialog.dialogId,messages)}
+                    onSend={messages=>this.sendTextMessage(route.params.dialog.dialogId,messages)}
                     user={currentUserReducer.user}
                 />
             </View>

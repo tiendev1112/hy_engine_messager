@@ -16,11 +16,11 @@ import {
 
 import {xmppConfig} from "../../config";
 import * as chatMediaAction from "../../actions/ChatMediaAction";
+import * as stanzaConst from '../../service/StanzaConst';
 const stanzaService = require('../../service');
 registerGlobals();
 const {height,width} = Dimensions.get('window');
-console.log(height,width);
-const configuration = {"iceServers": [{"urls": "stun:139.196.59.138:3478?transport=udp"},{"urls": "turn:139.196.59.138:3478?transport=udp"}]};
+const configuration = {"iceServers": xmppConfig.iceServers};
 
 
 class ChatMediaModal extends Component {
@@ -39,10 +39,61 @@ class ChatMediaModal extends Component {
     }
 
     componentDidMount() {
-        const {route} = this.props;
+        const {route ,chatMediaReducer} = this.props;
         console.log(route.params.isIncoming);
-        console.log(stanzaService.client.xmppClient)
+
+        const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
+        stanzaService.client.pc = new RTCPeerConnection(configuration);
+
+        console.log(stanzaService.client);
+        stanzaService.client.pc.onaddstream = event => {
+            console.log('On Add Remote Stream');
+            this.setState({remoteStream:event.stream});
+        };
+        stanzaService.client.pc.onicecandidate = event => {
+            if (event.candidate) {
+                //send candidate
+                const msgObj ={
+                    type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
+                    text:event.candidate
+                }
+                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+            }
+        };
+        mediaDevices.getUserMedia({
+            audio: true,
+            video: {
+                audio: true,
+                video: {
+                    width: width,
+                    height: height,
+                    frameRate: 30,
+                    facingMode: ("user")
+                }
+            },
+        }).then(stream => {
+            this.setState({localStream:stream});
+            stanzaService.client.pc.addStream(stream);
+        }).catch(error => {
+
+        });
         if(route.params.isIncoming){
+
+        }else{
+
+            stanzaService.client.pc.createOffer().then(offer => {
+                stanzaService.client.pc.setLocalDescription(offer).then(() => {
+                    // Send pc.localDescription to peer
+                    const msgObj ={
+                        type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
+                        text:offer
+                    }
+                    stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+                });
+            });
+
+        }
+        /*if(route.params.isIncoming){
             mediaDevices.enumerateDevices().then(sourceInfos => {
                 let videoSourceId;
                 for (let i = 0; i < sourceInfos.length; i++) {
@@ -62,14 +113,13 @@ class ChatMediaModal extends Component {
                     }
                 }).then(stream => {
                     console.log(stream);
-                    console.log(stanzaService.client.xmppClient.jingle.sessions);
+                    console.log(stanzaService.client.xmppClient.jingle.sessions[route.params.sid]);
 
                     this.setState({localStream:stream});
-                    //this.setState({remoteStream:stanzaService.client.xmppClient.jingle.sessions[route.params.sid].streams[0]});
-                    /*for (const track of stream.getTracks()) {
+                    this.setState({remoteStream:stanzaService.client.xmppClient.jingle.sessions[route.params.sid].streams[0]});
+                    for (const track of stream.getTracks()) {
                         stanzaService.client.xmppClient.jingle.sessions[route.params.sid].addTrack(track, stream);
-                    }*/
-                    console.log(route.params);
+                    }
                     stanzaService.client.xmppClient.jingle.sessions[route.params.sid].accept();
                 }).catch(error => {
                     console.log(error);
@@ -107,13 +157,18 @@ class ChatMediaModal extends Component {
                         console.log('peerTrackAdded',track);
                         console.log('peerTrackAdded',stream);
                     })
+                    stanzaService.client.xmppClient.sendIQ({
+                        offer: 'data',
+                        to: jid,
+                        type: 'set'
+                    });
                     mediaSession.start();
                     console.log(stanzaService.client.xmppClient.jingle);
                 }).catch(error => {
                     console.log(error);
                 });
             });
-        　}
+        　}*/
     }
     hangOff(){
 
@@ -233,6 +288,7 @@ class ChatMediaModal extends Component {
 
                 <View  style={styles.back}>
                     {this.state.localStream== null ? null :(<RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={this.state.localStream.toURL()}/>)}
+                    {this.state.remoteStream== null ? null :(<RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={this.state.remoteStream.toURL()}/>)}
                 </View>
                 <View style={styles.front}>
                     <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center",backgroundColor:"transparent"}}>
