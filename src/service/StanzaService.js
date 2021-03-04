@@ -155,16 +155,21 @@ class StanzaService {
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
             user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
+        console.log(this);
         if(msgBodyObj.type == stanzaConst.MSG_TYPE_TEXT){
             msgObj = {...msgObj,text:msgBodyObj.text}
             console.log(msgObj);
             store.dispatch(pushMessage(msgObj));
             store.dispatch(sortDialogs(msgObj,1));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_ANSWER){
-            this.pc.setRemoteDescription(new RTCSessionDescription(msgObj.text));
+            console.log("---->answer")
+            console.log(msgBodyObj.text)
+            this.pc.setRemoteDescription(new RTCSessionDescription(msgBodyObj.text));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
-            this.pc.addIceCandidate(new RTCIceCandidate(candidate));
+            console.log("---->candidate")
+            this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
+            console.log("---->offer")
             this.navigation.navigate('chatMediaModal',{dialog:getUserIdFromResource(msg.from),isIncoming:true,offer:msgBodyObj.text})
             /*this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
                 return this.pc.createAnswer();

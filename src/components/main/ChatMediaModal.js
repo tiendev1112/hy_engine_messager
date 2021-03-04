@@ -44,7 +44,7 @@ class ChatMediaModal extends Component {
         console.log(route.params.isIncoming);
 
         const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-        stanzaService.client.pc = new RTCPeerConnection({
+        stanzaService.client.xmppClient.pc = new RTCPeerConnection({
             iceServers: [
                 {
                     urls: 'stun:139.196.59.138:3478?transport=udp',
@@ -53,13 +53,14 @@ class ChatMediaModal extends Component {
         });
 
         console.log(stanzaService.client);
-        stanzaService.client.pc.onaddstream = event => {
+        stanzaService.client.xmppClient.pc.onaddstream = event => {
             console.log('On Add Remote Stream');
             this.setState({remoteStream:event.stream});
         };
-        stanzaService.client.pc.onicecandidate = event => {
+        stanzaService.client.xmppClient.pc.onicecandidate = event => {
             if (event.candidate) {
                 //send candidate
+                console.log("<----candidate")
                 const msgObj ={
                     type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
                     text:event.candidate
@@ -80,30 +81,30 @@ class ChatMediaModal extends Component {
             },
         }).then(stream => {
             this.setState({localStream:stream});
-            stanzaService.client.pc.addStream(stream);
+            stanzaService.client.xmppClient.pc.addStream(stream);
         }).catch(error => {
 
         });
         if(route.params.isIncoming){
-            this.setState({offer:route.params.offer});
-            stanzaService.client.pc.setRemoteDescription(this.state.offer).then(()=>{
-                return stanzaService.client.pc.createAnswer();
+            console.log(stanzaService.client);
+            stanzaService.client.xmppClient.pc.setRemoteDescription(route.params.offer).then(()=>{
+                return stanzaService.client.xmppClient.pc.createAnswer();
             }).then((answer)=>{
-                stanzaService.client.pc.setLocalDescription(answer);
+                stanzaService.client.xmppClient.pc.setLocalDescription(answer);
                 const msgObj ={
                     type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
                     text:answer
                 }
-                console.log(msgObj);
+                console.log(answer);
                 stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
             })
         }else{
             console.log('create offer');
             console.log(stanzaService.client);
 
-            stanzaService.client.pc.createOffer().then(offer => {
+            stanzaService.client.xmppClient.pc.createOffer().then(offer => {
                 console.log(offer);
-                stanzaService.client.pc.setLocalDescription(offer).then(() => {
+                stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
                     // Send pc.localDescription to peer
                     const msgObj ={
                         type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
