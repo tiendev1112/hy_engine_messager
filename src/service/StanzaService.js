@@ -102,14 +102,28 @@ class StanzaService {
     chatListener(msg){
         console.log("Chat >> ")
         console.log(msg)
-        const msgObj = new Message({
+        let msgObj = new Message({
             dialogId:getUserIdFromResource(msg.from),
             _id : msg.id,
-            text:msg.body,
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
             user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
+        let msgBodyObj ;
+        try{
+            msgBodyObj =JSON.parse(msg.body)
+        }catch (e){
+            msgBodyObj={
+                type :stanzaConst.MSG_TYPE_TEXT,
+                text : msg.body
+            }
+        }
         console.log(msgObj);
+        if(msgBodyObj.type == stanzaConst.MSG_TYPE_TEXT){
+            msgObj = {...msgObj,text:msgBodyObj.text}
+            console.log(msgObj);
+            store.dispatch(pushMessage(msgObj));
+            store.dispatch(sortDialogs(msgObj,1));
+        }
         store.dispatch(pushMessage(msgObj));
         store.dispatch(sortDialogs(msgObj,1));
     }

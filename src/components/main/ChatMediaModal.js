@@ -27,6 +27,7 @@ class ChatMediaModal extends Component {
     constructor(props) {
         super(props);
         this.state={
+            offer:null,
             localStream:null,
             remoteStream:null,
             isIncoming :false,
@@ -78,7 +79,12 @@ class ChatMediaModal extends Component {
 
         });
         if(route.params.isIncoming){
-
+            this.setState({offer:route.params.offer});
+            stanzaService.client.pc.setRemoteDescription(this.state.offer).then(()=>{
+                return stanzaService.client.pc.createAnswer();
+            }).then((answer)=>{
+                stanzaService.client.pc.setLocalDescription(answer);
+            })
         }else{
 
             stanzaService.client.pc.createOffer().then(offer => {
