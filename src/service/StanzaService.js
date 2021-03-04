@@ -124,8 +124,6 @@ class StanzaService {
             store.dispatch(pushMessage(msgObj));
             store.dispatch(sortDialogs(msgObj,1));
         }
-        store.dispatch(pushMessage(msgObj));
-        store.dispatch(sortDialogs(msgObj,1));
     }
     groupchatListener(msg){
         console.log("GroupChat >> ")
@@ -199,8 +197,29 @@ class StanzaService {
             //自动回复收到信息
         }else{
             //计入reducer
-            console.log(store.getState().CurrentUserReducer.user);
-            const msgObj = new Message({
+            let msgObj = new Message({
+                dialogId:getUserIdFromJID(msg.to),
+                _id : msg.id,
+                createdAt:Date.now(),
+                user:store.getState().CurrentUserReducer.user
+            });
+            let msgBodyObj ;
+            try{
+                msgBodyObj =JSON.parse(msg.body)
+            }catch (e){
+                msgBodyObj={
+                    type :stanzaConst.MSG_TYPE_TEXT,
+                    text : msg.body
+                }
+            }
+            console.log(msgObj);
+            if(msgBodyObj.type == stanzaConst.MSG_TYPE_TEXT){
+                msgObj = {...msgObj,text:msgBodyObj.text}
+                console.log(msgObj);
+                store.dispatch(pushMessage(msgObj));
+                store.dispatch(sortDialogs(msgObj));
+            }
+            /*const msgObj = new Message({
                 dialogId:getUserIdFromJID(msg.to),
                 _id : msg.id,
                 text:msg.body,
@@ -209,7 +228,7 @@ class StanzaService {
             });
             console.log(msgObj);
             store.dispatch(pushMessage(msgObj));
-            store.dispatch(sortDialogs(msgObj));
+            store.dispatch(sortDialogs(msgObj));*/
         }
     }
 
