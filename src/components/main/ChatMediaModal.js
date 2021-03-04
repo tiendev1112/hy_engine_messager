@@ -44,7 +44,13 @@ class ChatMediaModal extends Component {
         console.log(route.params.isIncoming);
 
         const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-        stanzaService.client.pc = new RTCPeerConnection(configuration);
+        stanzaService.client.pc = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: 'stun:139.196.59.138:3478?transport=udp',
+                },
+            ],
+        });
 
         console.log(stanzaService.client);
         stanzaService.client.pc.onaddstream = event => {
@@ -84,16 +90,26 @@ class ChatMediaModal extends Component {
                 return stanzaService.client.pc.createAnswer();
             }).then((answer)=>{
                 stanzaService.client.pc.setLocalDescription(answer);
+                const msgObj ={
+                    type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
+                    text:answer
+                }
+                console.log(msgObj);
+                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
             })
         }else{
+            console.log('create offer');
+            console.log(stanzaService.client);
 
             stanzaService.client.pc.createOffer().then(offer => {
+                console.log(offer);
                 stanzaService.client.pc.setLocalDescription(offer).then(() => {
                     // Send pc.localDescription to peer
                     const msgObj ={
                         type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
                         text:offer
                     }
+                    console.log(msgObj);
                     stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
                 });
             });
