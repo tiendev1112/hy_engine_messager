@@ -143,23 +143,24 @@ class StanzaService {
             createdAt:msg.delay?new Date(msg.delay.timestamp).getTime():Date.now() ,
             user:{_id:getUserIdFromResource(msg.from),name:getUserIdFromResource(msg.from),avatar:'http://erp.stsswl.com/assets/images/logo_72.png'}
         });
-        if(msgBodyObj.type = stanzaConst.MSG_TYPE_TEXT){
+        if(msgBodyObj.type == stanzaConst.MSG_TYPE_TEXT){
             msgObj = {...msgObj,text:msgBodyObj.text}
-        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_ANSWER){
+            console.log(msgObj);
+            store.dispatch(pushMessage(msgObj));
+            store.dispatch(sortDialogs(msgObj,1));
+        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_ANSWER){
             this.pc.setRemoteDescription(new RTCSessionDescription(msgObj.text));
-        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
+        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
             this.pc.addIceCandidate(new RTCIceCandidate(candidate));
-        }else if(msgBodyObj.type = stanzaConst.MSG_TYPE_MEDIA_OFFER){
-            this.navigation.navigate('chatMediaModal',{dialog:msg.from,isIncoming:true})
-            this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
+        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
+            this.navigation.navigate('chatMediaModal',{dialog:getUserIdFromResource(msg.from),isIncoming:true,offer:msgBodyObj.text})
+            /*this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
                 return this.pc.createAnswer();
             }).then((answer)=>{
                 this.pc.setLocalDescription(answer);
-            })
+            })*/
         }
-        console.log(msgObj);
-        store.dispatch(pushMessage(msgObj));
-        store.dispatch(sortDialogs(msgObj,1));
+
     }
     jingleIncomingListener(session) {
         console.log("jingle incoming");
