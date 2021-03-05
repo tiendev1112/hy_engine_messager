@@ -44,6 +44,7 @@ class ChatMediaModal extends Component {
         console.log(route.params.isIncoming);
 
         const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
+        console.log(jid);
         stanzaService.client.xmppClient.pc = new RTCPeerConnection({
             iceServers: [
                 {

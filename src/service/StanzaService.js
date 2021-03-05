@@ -169,8 +169,8 @@ class StanzaService {
             console.log("---->candidate")
             this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
-            console.log("---->offer")
-            this.navigation.navigate('chatMediaModal',{dialog:getUserIdFromResource(msg.from),isIncoming:true,offer:msgBodyObj.text})
+            console.log("---->offer",getUserIdFromResource(msg.from))
+            this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
             /*this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
                 return this.pc.createAnswer();
             }).then((answer)=>{
