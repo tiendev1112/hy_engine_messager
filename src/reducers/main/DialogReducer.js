@@ -22,6 +22,17 @@ const initialState = {
             createdAt: 1605144573228,
             unreadMessagesCount: 0,
             unreadMessagesIds : []
+        },
+        {
+            name : 'yae_pkoc1kzfb9ln',
+            photo: 'http://erp.stsswl.com/assets/images/logo_72.png',
+            dialogId : 'yae_pkoc1kzfb9ln',
+            lastMessage: 'No message 123',
+            lastMessageId: 'alkj2349jlajjk34',
+            lastMessageDateSent: 1605144573228,
+            createdAt: 1605144573228,
+            unreadMessagesCount: 0,
+            unreadMessagesIds : []
         }
     ]
 };

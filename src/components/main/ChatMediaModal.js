@@ -21,7 +21,7 @@ const stanzaService = require('../../service');
 registerGlobals();
 const {height,width} = Dimensions.get('window');
 const configuration = {"iceServers": xmppConfig.iceServers};
-
+let pc = null;
 
 class ChatMediaModal extends Component {
     constructor(props) {
@@ -36,6 +36,7 @@ class ChatMediaModal extends Component {
             isCameraFront : true,
             isMute : false,
             status:1
+
         }
     }
 
@@ -60,8 +61,6 @@ class ChatMediaModal extends Component {
         };
         stanzaService.client.xmppClient.pc.onicecandidate = event => {
             if (event.candidate) {
-                //send candidate
-                console.log("<----candidate")
                 const msgObj ={
                     type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
                     text:event.candidate
@@ -86,6 +85,8 @@ class ChatMediaModal extends Component {
         }).catch(error => {
 
         });
+
+
         if(route.params.isIncoming){
             console.log(stanzaService.client);
             stanzaService.client.xmppClient.pc.setRemoteDescription(route.params.offer).then(()=>{
@@ -102,20 +103,20 @@ class ChatMediaModal extends Component {
         }else{
             console.log('create offer');
             console.log(stanzaService.client);
-
-            stanzaService.client.xmppClient.pc.createOffer().then(offer => {
-                console.log(offer);
-                stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
-                    // Send pc.localDescription to peer
-                    const msgObj ={
-                        type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
-                        text:offer
-                    }
-                    console.log(msgObj);
-                    stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+            setTimeout(() => {
+                stanzaService.client.xmppClient.pc.createOffer().then(offer => {
+                    console.log(offer);
+                    stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
+                        // Send pc.localDescription to peer
+                        const msgObj ={
+                            type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
+                            text:offer
+                        }
+                        console.log(msgObj);
+                        stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+                    });
                 });
-            });
-
+            },2000);
         }
         /*if(route.params.isIncoming){
             mediaDevices.enumerateDevices().then(sourceInfos => {
@@ -202,6 +203,12 @@ class ChatMediaModal extends Component {
         const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
             hangOffSession} = this.props;
         const isIncoming = route.params.isIncoming || false;
+        const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
+
+        setTimeout(() => {
+            console.log(pc);
+
+        },2000);
         let renderUserView;
         let renderButtonView;
         let hangOffButton = (

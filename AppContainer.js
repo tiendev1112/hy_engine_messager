@@ -62,25 +62,25 @@ const MainStackScreen = (props)=>{
                 name="chatItemScreen"
                 component={ChatItemScreen}
                 options={({ navigation, route }) => ({
-                    title: route.params.title,
-                    headerTitleStyle: {
-                        color: '#3578e5',
-                    },
-                    headerRight: (props)=>{
-                        return <Button  transparent {...props} onPress={() => {
-                            navigation.navigate('chatMediaModal',{dialog:route.params.dialog})
-                        }}>
+                title: route.params.title,
+                headerTitleStyle: {
+                    color: '#3578e5',
+                },
+                headerRight: (props)=>{
+                    return <Button  transparent {...props} onPress={() => {
+                        navigation.navigate('chatMediaModal',{dialog:route.params.dialog})
+                    }}>
 
-                            <Icon name='call' size={30} color='#3578e5'/>
-                        </Button>},
-                    headerLeft: (props)=>{
-                        return <Button  transparent {...props} onPress={() => {
-                            navigation.goBack();
-                            store.dispatch(updateDialogUnread(route.params.dialog));
-                        }}>
+                        <Icon name='call' size={30} color='#3578e5'/>
+                    </Button>},
+                headerLeft: (props)=>{
+                    return <Button  transparent {...props} onPress={() => {
+                        navigation.goBack();
+                        store.dispatch(updateDialogUnread(route.params.dialog));
+                    }}>
 
-                            <Icon name='chevron-back-outline' size={30} color='#3578e5'/>
-                        </Button>}})}
+                        <Icon name='chevron-back-outline' size={30} color='#3578e5'/>
+                    </Button>}})}
 
             />
             <MainStack.Screen

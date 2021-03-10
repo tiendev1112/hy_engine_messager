@@ -165,12 +165,26 @@ class StanzaService {
             console.log("---->answer")
             console.log(msgBodyObj.text)
             this.pc.setRemoteDescription(new RTCSessionDescription(msgBodyObj.text));
+            console.log(this);
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
             console.log("---->candidate")
             this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text));
+            console.log(this);
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
             console.log("---->offer",getUserIdFromResource(msg.from))
-            this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+            this.pc.setRemoteDescription(new RTCSessionDescription(msgBodyObj.text)).then(()=>{
+                return this.pc.createAnswer();
+            }).then((answer)=>{
+                this.pc.setLocalDescription(answer);
+                const msgObj ={
+                    type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
+                    text:answer
+                }
+                console.log(answer);
+                this.sendMessage({to:msg.from,body:JSON.stringify(msgObj)});
+                console.log(this);
+            })
+            //this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
             /*this.pc.setRemoteDescription(msgBodyObj.text).then(()=>{
                 return this.pc.createAnswer();
             }).then((answer)=>{
