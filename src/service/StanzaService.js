@@ -12,7 +12,7 @@ import {
 
 import {sortDialogs} from '../actions/DialogAction';
 import {pushMessage} from "../actions/MessageAction";
-import {setMediaSession,setIncomingFlag} from "../actions/ChatMediaAction";
+import {setMediaSession,setIncomingFlag,setStatus} from "../actions/ChatMediaAction";
 import {setCurrentUser} from "../actions/CurrentUserActions";
 import {getIdFromResource,getUserIdFromResource,getUserIdFromJID} from "../service/StanzaUtil";
 import * as stanzaConst from './StanzaConst';
@@ -162,15 +162,21 @@ class StanzaService {
             store.dispatch(pushMessage(msgObj));
             store.dispatch(sortDialogs(msgObj,1));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_ANSWER){
-            console.log("---->set remote description ")
+            console.log("---->set remote description ",new RTCSessionDescription(msgBodyObj.text))
             this.pc.setRemoteDescription(new RTCSessionDescription(msgBodyObj.text));
+            store.dispatch(setStatus(2));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
-            console.log("---->add ice candidate")
-            this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text));
+            console.log("---->add ice candidate",msgBodyObj);
+            this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ", e)});
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
+            console.log("----> offer",msgBodyObj.text)
             this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_LEAVE){
+            console.log("----> level");
+            this.pc.onicecandidate = null;
+            this.pc.ontrack = null;
+            this.navigation.goBack();
         }
-
     }
     jingleIncomingListener(session) {
         console.log("jingle incoming");

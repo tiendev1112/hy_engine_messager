@@ -269,90 +269,118 @@ function ChatMediaModal(props) {
         hangOffSession} = props;
     const isIncoming = route.params.isIncoming || false;
     const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-    console.log(jid);
-    stanzaService.client.xmppClient.pc = new RTCPeerConnection({
-        iceServers: [
-            {
-                urls: 'stun:139.196.59.138:3478?transport=udp',
-            },
-        ],
-    });
+
 
     useEffect(() => {
-        mediaDevices.getUserMedia({
-            audio: true,
-            video: {
-                audio: true,
-                video: {
-                    width: width,
-                    height: height,
-                    frameRate: 30,
-                    facingMode: ("user")
-                }
-            },
-        }).then(stream => {
-            setLocalStream(stream);
-            stanzaService.client.xmppClient.pc.addStream(stream);
-
-        }).catch(error => {
-
+        console.log('----create pc ',jid);
+        stanzaService.client.xmppClient.pc = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: 'stun:139.196.59.138:3478?transport=udp',
+                },
+            ],
         });
-    }, []);
-
-
-    useEffect(() => {
+        initLocalVideo();
+        registerPeerEvents();
         if(route.params.isIncoming){
-            console.log(stanzaService.client);
-            stanzaService.client.xmppClient.pc.setRemoteDescription(route.params.offer).then(()=>{
-                return stanzaService.client.xmppClient.pc.createAnswer();
-            }).then((answer)=>{
-                stanzaService.client.xmppClient.pc.setLocalDescription(answer);
-                const msgObj ={
-                    type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
-                    text:answer
-                }
-                console.log(answer);
-                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
-            })
+
         }else {
             setTimeout(() => {
-
                 stanzaService.client.xmppClient.pc.createOffer().then(offer => {
                     stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
                         const msgObj = {
                             type: stanzaConst.MSG_TYPE_MEDIA_OFFER,
                             text: offer
                         }
-                        console.log(msgObj);
+                        console.log(offer);
                         stanzaService.client.xmppClient.sendMessage({to: jid, body: JSON.stringify(msgObj)});
                     });
                 });
             }, 1000);
-            stanzaService.client.xmppClient.pc.onaddstream = event => {
-                console.log('On Add Remote Stream');
-                this.setState({remoteStream:event.stream});
-            };
-            stanzaService.client.xmppClient.pc.onicecandidate = event => {
-                if (event.candidate) {
-                    const msgObj ={
-                        type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
-                        text:event.candidate
-                    }
-                    stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
-                }
-            };
         }
-    }, [localStream]);
+    }, []);
 
+    /*useEffect(() => {
 
+    }, [localStream]);*/
+    const registerPeerEvents = () => {
+        stanzaService.client.xmppClient.pc.onaddstream = event => {
+            console.log('--->On Add Remote Stream');
+            setRemoteStream(event.stream);
+        };
+        stanzaService.client.xmppClient.pc.oniceconnectionstatechange = state => {
+            console.log('oniceconnectionstatechange:',state);
+        };
+        stanzaService.client.xmppClient.pc.onconnectionstatechange = state => {
+            console.log('onconnectionstatechange:',state);
+        };
+        stanzaService.client.xmppClient.pc.onconnectionstatechange = state => {
+            console.log('onconnectionstatechange:',state);
+        };
+        stanzaService.client.xmppClient.pc.onicecandidate = event => {
+            console.log('---> send candidate');
+            if (event.candidate) {
+                const msgObj ={
+                    type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
+                    text:event.candidate
+                }
+                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+            }
+        };
+    }
+    const initLocalVideo = () => {
+        mediaDevices.getUserMedia({
+                audio: true,
+                video: {
+                    audio: true,
+                    video: {
+                        width: width,
+                        height: height,
+                        frameRate: 30,
+                        facingMode: ("user")
+                    }
+                }
+        }).then(stream => {
+            setLocalStream(stream);
+            stanzaService.client.xmppClient.pc.addStream(stream);
+        }).catch(error => {
 
+        });
+    };
 
+    const accept = async () => {
+        console.log(route.params.offer);
+
+        stanzaService.client.xmppClient.pc.setRemoteDescription(new RTCSessionDescription(route.params.offer)).then(()=>{
+            return stanzaService.client.xmppClient.pc.createAnswer();
+        }).then((answer)=>{
+            stanzaService.client.xmppClient.pc.setLocalDescription(answer);
+            const msgObj ={
+                type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
+                text:answer
+            }
+            console.log(answer);
+            stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+        })
+    }
+    const leave = () => {
+        const msgObj ={
+            type:stanzaConst.MSG_TYPE_MEDIA_LEAVE
+        }
+        stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+        setRemoteStream(null);
+        setLocalStream(null);
+        stanzaService.client.xmppClient.pc.close();
+        stanzaService.client.xmppClient.pc.onicecandidate = null;
+        stanzaService.client.xmppClient.pc.ontrack = null;
+        navigation.goBack()
+    }
 
     let renderUserView;
     let renderButtonView;
     let hangOffButton = (
         <View style={styles.circleIcon}>
-            <Icon onPress={() => {hangOffSession();navigation.goBack()}}
+            <Icon onPress={leave}
                   type="MaterialCommunityIcons" name="cancel" size={40}
                   color="red"/>
             <Text style={{color:"white"}}>挂断</Text>
@@ -360,7 +388,7 @@ function ChatMediaModal(props) {
     )
     let acceptButton = (
         <View style={styles.circleIcon}>
-            <Icon onPress={() =>  navigation.goBack()}
+            <Icon onPress={accept}
                   type="MaterialCommunityIcons" name="check" size={40}
                   color="green"/>
             <Text style={{color:"white"}}>接听</Text>
