@@ -175,6 +175,7 @@ class StanzaService {
             console.log("----> level");
             this.pc.onicecandidate = null;
             this.pc.ontrack = null;
+            console.log(this.navigation);
             this.navigation.goBack();
         }
     }

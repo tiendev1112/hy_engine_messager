@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {Dimensions,StyleSheet,View} from 'react-native';
 import {Button,Text,Thumbnail} from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import InCallManager from 'react-native-incall-manager';
 import {
     RTCPeerConnection,
     RTCIceCandidate,
@@ -21,250 +22,19 @@ const stanzaService = require('../../service');
 registerGlobals();
 const {height,width} = Dimensions.get('window');
 const configuration = {"iceServers": xmppConfig.iceServers};
-let pc = null;
-
-/*class ChatMediaModal extends Component {
-    constructor(props) {
-        super(props);
-        this.state={
-            offer:null,
-            localStream:null,
-            remoteStream:null,
-            isIncoming :false,
-            isAudio : false,
-            isLoudSpeaker : false,
-            isCameraFront : true,
-            isMute : false,
-            status:1
-
-        }
-    }
-
-    componentDidMount() {
-        const {route ,chatMediaReducer} = this.props;
-        console.log(route.params.isIncoming);
-
-        const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-        console.log(jid);
-        stanzaService.client.xmppClient.pc = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: 'stun:139.196.59.138:3478?transport=udp',
-                },
-            ],
-        });
-
-        console.log(stanzaService.client);
-        stanzaService.client.xmppClient.pc.onaddstream = event => {
-            console.log('On Add Remote Stream');
-            this.setState({remoteStream:event.stream});
-        };
-        stanzaService.client.xmppClient.pc.onicecandidate = event => {
-            if (event.candidate) {
-                const msgObj ={
-                    type:stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
-                    text:event.candidate
-                }
-                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
-            }
-        };
-        mediaDevices.getUserMedia({
-            audio: true,
-            video: {
-                audio: true,
-                video: {
-                    width: width,
-                    height: height,
-                    frameRate: 30,
-                    facingMode: ("user")
-                }
-            },
-        }).then(stream => {
-            this.setState({localStream:stream});
-            stanzaService.client.xmppClient.pc.addStream(stream);
-        }).catch(error => {
-
-        });
 
 
-        if(route.params.isIncoming){
-            console.log(stanzaService.client);
-            stanzaService.client.xmppClient.pc.setRemoteDescription(route.params.offer).then(()=>{
-                return stanzaService.client.xmppClient.pc.createAnswer();
-            }).then((answer)=>{
-                stanzaService.client.xmppClient.pc.setLocalDescription(answer);
-                const msgObj ={
-                    type:stanzaConst.MSG_TYPE_MEDIA_ANSWER,
-                    text:answer
-                }
-                console.log(answer);
-                stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
-            })
-        }else{
-            console.log('create offer');
-            console.log(stanzaService.client);
-
-            setTimeout(() => {
-
-                /!*stanzaService.client.xmppClient.pc.createOffer().then(offer => {
-                    console.log(offer);
-                    stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
-                        // Send pc.localDescription to peer
-                        const msgObj ={
-                            type:stanzaConst.MSG_TYPE_MEDIA_OFFER,
-                            text:offer
-                        }
-                        console.log(msgObj);
-                        stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
-                    });
-                });*!/
-            },1000);
-        }
-    }
-    hangOff(){
-
-    }
-
-    render() {
-        const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
-            hangOffSession} = this.props;
-        const isIncoming = route.params.isIncoming || false;
-        const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-
-        setTimeout(() => {
-            console.log(pc);
-
-        },2000);
-        let renderUserView;
-        let renderButtonView;
-        let hangOffButton = (
-            <View style={styles.circleIcon}>
-                <Icon onPress={() => {hangOffSession();navigation.goBack()}}
-                      type="MaterialCommunityIcons" name="cancel" size={40}
-                      color="red"/>
-                <Text style={{color:"white"}}>挂断</Text>
-            </View>
-        )
-        let acceptButton = (
-            <View style={styles.circleIcon}>
-                <Icon onPress={() =>  navigation.goBack()}
-                      type="MaterialCommunityIcons" name="check" size={40}
-                      color="green"/>
-                <Text style={{color:"white"}}>接听</Text>
-            </View>
-        )
-        let audioVideoToggleButton =this.state.isAudio?(
-            <View style={styles.circleIcon}>
-                <Icon type="MaterialCommunityIcons" name="video" size={40}
-                    onPress={()=>this.setState({isAudio:false})}
-                    color="red"/>
-                <Text style={{color:"white"}}>视频</Text>
-            </View>):(
-            <View style={styles.circleIcon}>
-                <Icon type="MaterialCommunityIcons" name="microphone" size={40}
-                      onPress={()=>this.setState({isAudio:true})}
-                      color="red"/>
-                <Text style={{color:"white"}}>语音</Text>
-            </View>);
-        let muteToggleButton =(
-            <View style={[styles.circleIcon,{backgroundColor:this.state.isMute?"white":"transparent"}]}>
-                <Icon type="MaterialCommunityIcons" name="volume-mute" size={40}
-                      onPress={()=>this.setState({isMute:!this.state.isMute})}
-                      color="green"/>
-                <Text style={{color:"green"}}>静音</Text>
-            </View>)
-        let louderSpeakerToggleButton = (
-            <View style={[styles.circleIcon,{backgroundColor:this.state.isLoudSpeaker?"white":"transparent"}]}>
-                <Icon type="MaterialCommunityIcons" name="volume-high" size={40}
-                      onPress={()=>this.setState({isLoudSpeaker:!this.state.isLoudSpeaker})}
-                      color="red"/>
-                <Text style={{color:"red"}}>免提</Text>
-            </View>)
-
-        if(this.state.status==1) {//状态为未接通
-            renderUserView = (
-                <View style={{flex:1,alignItems:"center",paddingTop:0}}>
-                    <Thumbnail style={{width:120,height:120,borderRadius:60}} source={{ uri: 'https://s.gravatar.com/avatar/49f4297846f70d6c070b0b604dd99175?size=100&default=retro' }} />
-                    <Text style={{color:"white",paddingTop:10,fontSize:24}}>euser2</Text>
-                </View>);
-            if(isIncoming){//被叫
-                renderButtonView = (
-                    <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                        <View style={styles.circleIcon}>
-                            <Icon onPress={() => {hangOffSession();navigation.goBack()}}
-                                  type="MaterialCommunityIcons" name="phone-off-outline" size={40}
-                                  color="red"/>
-                            <Text style={{color:"white"}}>拒接</Text>
-                        </View>
-                        {acceptButton}
-                    </View>
-                );
-            }else {//主叫
-                console.log("主叫")
-                if(this.state.isAudio){//语音通话
-                    renderButtonView = (
-                        <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                            {muteToggleButton}
-                            {acceptButton}
-                            {louderSpeakerToggleButton}
-                        </View>
-                    );
-                }else{//视频通话
-                    renderButtonView = (
-                        <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                            {audioVideoToggleButton}
-                            {hangOffButton}
-                            {/!*<View style={[styles.circleIcon,{backgroundColor:!this.state.isCameraFront?"white":"transparent"}]}>
-                                <Icon onPress={() =>  this.setState({isCameraFront:!this.state.isCameraFront})}
-                                      type="MaterialCommunityIcons" name="video-switch" size={40}
-                                      color="red"/>
-                                <Text style={{color:"red"}}>镜头</Text>
-                            </View>*!/}
-                        </View>
-                    )
-                }
-            }
-        }else{
-            //状态为接通
-            renderUserView = (
-                <View></View>
-            )
-            renderButtonView = (
-                <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                    {hangOffButton}
-                </View>
-            );
-        }
-
-
-
-        return (
-            <View style={styles.wrapper}>
-
-                <View  style={styles.back}>
-                    {this.state.localStream== null ? null :(<RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={this.state.localStream.toURL()}/>)}
-                    {this.state.remoteStream== null ? null :(<RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={this.state.remoteStream.toURL()}/>)}
-                </View>
-                <View style={styles.front}>
-                    <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center",backgroundColor:"transparent"}}>
-                        {/!*{renderUserView}*!/}
-                    </View>
-                    <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
-                        {renderButtonView}
-                    </View>
-                </View>
-            </View>
-        )
-    }
-}*/
 function ChatMediaModal(props) {
+    const DISCONNECT_STATUS =1 ;
+    const CONNECTING_STATUS =2;
+    const CONNECTED_STATUS =3;
     const [localStream, setLocalStream] = useState({toURL: () => null});
     const [remoteStream, setRemoteStream] = useState({toURL: () => null});
     const [isAudio,setIsAudio] = useState(false);
-    const [isLoudSpeaker,setIsLoudSpeaker] = useState(false);
+    const [isLoudSpeaker,setIsLoudSpeaker] = useState(true);
     const [isCameraFront,setIsCameraFront] = useState(true);
     const [isMute,setIsMute] = useState(false);
-    const [status,setStatus] = useState(1);
+    const [status,setStatus] = useState(DISCONNECT_STATUS);
     const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
         hangOffSession} = props;
     const isIncoming = route.params.isIncoming || false;
@@ -280,6 +50,7 @@ function ChatMediaModal(props) {
                 },
             ],
         });
+        console.log(stanzaService.client.xmppClient);
         initLocalVideo();
         registerPeerEvents();
         if(route.params.isIncoming){
@@ -300,13 +71,18 @@ function ChatMediaModal(props) {
         }
     }, []);
 
-    /*useEffect(() => {
-
-    }, [localStream]);*/
     const registerPeerEvents = () => {
         stanzaService.client.xmppClient.pc.onaddstream = event => {
             console.log('--->On Add Remote Stream');
             setRemoteStream(event.stream);
+            InCallManager.setSpeakerphoneOn(true);
+            setStatus(CONNECTED_STATUS);
+        };
+        stanzaService.client.xmppClient.pc.onremovestream = event => {
+            console.log('--->On Add Remote Stream');
+            //setRemoteStream(event.stream);
+            InCallManager.setSpeakerphoneOn(true);
+            setStatus(CONNECTED_STATUS);
         };
         stanzaService.client.xmppClient.pc.oniceconnectionstatechange = state => {
             console.log('oniceconnectionstatechange:',state);
@@ -343,6 +119,7 @@ function ChatMediaModal(props) {
         }).then(stream => {
             setLocalStream(stream);
             stanzaService.client.xmppClient.pc.addStream(stream);
+            console.log(stanzaService.client.xmppClient.pc.getLocalStreams());
         }).catch(error => {
 
         });
@@ -376,6 +153,39 @@ function ChatMediaModal(props) {
         navigation.goBack()
     }
 
+    const toggleMute = () => {
+        const localAudioTracks = localStream.getAudioTracks();
+        if(isMute){
+            localAudioTracks.forEach(t => stanzaService.client.xmppClient.pc.getLocalStreams()[0].addTrack(t));
+            setIsMute(false);
+        }else{
+            localAudioTracks.forEach(t => stanzaService.client.xmppClient.pc.getLocalStreams()[0].removeTrack(t));
+            setIsMute(true);
+        }
+
+    }
+
+    const toggleSpeaker =() =>{
+        if(isLoudSpeaker){
+            InCallManager.setSpeakerphoneOn(false);
+        }else{
+            InCallManager.setSpeakerphoneOn(true);
+        }
+        setIsLoudSpeaker(!isLoudSpeaker);
+    }
+    const toggleAudio = ()=>{
+        const localVideoTracks = localStream.getVideoTracks();
+        localVideoTracks.forEach(t => stanzaService.client.xmppClient.pc.getLocalStreams()[0].removeTrack(t));
+        setIsAudio(true);
+    }
+
+    const switchCamera = ()=>{
+        stanzaService.client.xmppClient.pc.getLocalStreams()[0].getVideoTracks().forEach((track) => {
+            track._switchCamera()
+        })
+        setIsCameraFront(!isCameraFront);
+    }
+
     let renderUserView;
     let renderButtonView;
     let hangOffButton = (
@@ -385,7 +195,7 @@ function ChatMediaModal(props) {
                   color="red"/>
             <Text style={{color:"white"}}>挂断</Text>
         </View>
-    )
+    );
     let acceptButton = (
         <View style={styles.circleIcon}>
             <Icon onPress={accept}
@@ -393,31 +203,25 @@ function ChatMediaModal(props) {
                   color="green"/>
             <Text style={{color:"white"}}>接听</Text>
         </View>
-    )
-    let audioVideoToggleButton =isAudio?(
-        <View style={styles.circleIcon}>
-            <Icon type="MaterialCommunityIcons" name="video" size={40}
-                  onPress={()=>setIsAudio(false)}
-                  color="red"/>
-            <Text style={{color:"white"}}>视频</Text>
-        </View>):(
+    );
+    let audioToggleButton =(
         <View style={styles.circleIcon}>
             <Icon type="MaterialCommunityIcons" name="microphone" size={40}
-                  onPress={()=>setIsAudio(true)}
+                  onPress={toggleAudio}
                   color="red"/>
             <Text style={{color:"white"}}>语音</Text>
         </View>);
     let muteToggleButton =(
         <View style={[styles.circleIcon,{backgroundColor:isMute?"white":"transparent"}]}>
             <Icon type="MaterialCommunityIcons" name="volume-mute" size={40}
-                  onPress={()=>setIsMute(!isMute)}
+                  onPress={toggleMute}
                   color="green"/>
             <Text style={{color:"green"}}>静音</Text>
         </View>)
     let louderSpeakerToggleButton = (
         <View style={[styles.circleIcon,{backgroundColor:isLoudSpeaker?"white":"transparent"}]}>
             <Icon type="MaterialCommunityIcons" name="volume-high" size={40}
-                  onPress={()=>setIsLoudSpeaker(!isLoudSpeaker)}
+                  onPress={toggleSpeaker}
                   color="red"/>
             <Text style={{color:"red"}}>免提</Text>
         </View>)
@@ -432,7 +236,7 @@ function ChatMediaModal(props) {
             renderButtonView = (
                 <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
                     <View style={styles.circleIcon}>
-                        <Icon onPress={() => {hangOffSession();navigation.goBack()}}
+                        <Icon onPress={leave}
                               type="MaterialCommunityIcons" name="phone-off-outline" size={40}
                               color="red"/>
                         <Text style={{color:"white"}}>拒接</Text>
@@ -453,39 +257,57 @@ function ChatMediaModal(props) {
             }else{//视频通话
                 renderButtonView = (
                     <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                        {audioVideoToggleButton}
+                        {audioToggleButton}
                         {hangOffButton}
-                        {/*<View style={[styles.circleIcon,{backgroundColor:!isCameraFront?"white":"transparent"}]}>
-                                <Icon onPress={() =>  this.setState({isCameraFront:!isCameraFront})}
-                                      type="MaterialCommunityIcons" name="video-switch" size={40}
-                                      color="red"/>
-                                <Text style={{color:"red"}}>镜头</Text>
-                            </View>*/}
+                        <View style={[styles.circleIcon,{backgroundColor:!isCameraFront?"white":"transparent"}]}>
+                            <Icon onPress={switchCamera}
+                                  type="MaterialCommunityIcons" name="video-switch" size={40}
+                                  color="red"/>
+                            <Text style={{color:"red"}}>镜头</Text>
+                        </View>
                     </View>
                 )
             }
         }
     }else{
         //状态为接通
+        if(isAudio){
+            renderButtonView = (
+                <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
+                    {hangOffButton}
+                    {muteToggleButton}
+                    {louderSpeakerToggleButton}
+                </View>
+            );
+        }else{
+            renderButtonView = (
+                <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
+                    {audioToggleButton}
+                    {hangOffButton}
+                    <View style={[styles.circleIcon,{backgroundColor:!isCameraFront?"white":"transparent"}]}>
+                        <Icon onPress={switchCamera}
+                              type="MaterialCommunityIcons" name="video-switch" size={40}
+                              color="red"/>
+                        <Text style={{color:"red"}}>镜头</Text>
+                    </View>
+                </View>
+            )
+        }
         renderUserView = (
             <View></View>
         )
-        renderButtonView = (
-            <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                {hangOffButton}
-            </View>
-        );
+
     }
     return (
         <View style={styles.wrapper}>
 
             <View  style={styles.back}>
                 <RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={localStream ? localStream.toURL() : ''}/>
-                {remoteStream== null ? null :(<RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={remoteStream.toURL()}/>)}
+                <RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={remoteStream ? remoteStream.toURL() : ''}/>
             </View>
             <View style={styles.front}>
                 <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center",backgroundColor:"transparent"}}>
-
+                    {renderUserView}
                 </View>
                 <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
                     {renderButtonView}
