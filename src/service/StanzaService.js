@@ -170,11 +170,15 @@ class StanzaService {
             this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ", e)});
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
             console.log("----> offer",msgBodyObj.text)
-            this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+            if(this.pc == null){
+                this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+            }
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_LEAVE){
             console.log("----> level");
+
             this.pc.onicecandidate = null;
             this.pc.ontrack = null;
+            this.pc = null;
             console.log(this.navigation);
             this.navigation.goBack();
         }

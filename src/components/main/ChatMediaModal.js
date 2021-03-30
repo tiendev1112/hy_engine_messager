@@ -1,6 +1,6 @@
-import React,{useEffect, useState, } from 'react';
+import React,{useEffect, useState, useRef} from 'react';
 import {connect} from 'react-redux';
-import {Dimensions,StyleSheet,View} from 'react-native';
+import {Dimensions,StyleSheet,TouchableOpacity,View} from 'react-native';
 import {Button,Text,Thumbnail} from 'native-base';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import InCallManager from 'react-native-incall-manager';
@@ -23,13 +23,17 @@ registerGlobals();
 const {height,width} = Dimensions.get('window');
 const configuration = {"iceServers": xmppConfig.iceServers};
 
-
 function ChatMediaModal(props) {
     const DISCONNECT_STATUS =1 ;
     const CONNECTING_STATUS =2;
     const CONNECTED_STATUS =3;
+    const bigView = useRef();
+    const smallView = useRef();
+    const [timerCount,setTimerCount] = useState(0);
+    const timerRef = useRef();
     const [localStream, setLocalStream] = useState({toURL: () => null});
     const [remoteStream, setRemoteStream] = useState({toURL: () => null});
+    const [isLocalBig,setIsLocalBig] = useState(true);
     const [isAudio,setIsAudio] = useState(false);
     const [isLoudSpeaker,setIsLoudSpeaker] = useState(true);
     const [isCameraFront,setIsCameraFront] = useState(true);
@@ -42,7 +46,6 @@ function ChatMediaModal(props) {
 
 
     useEffect(() => {
-        console.log('----create pc ',jid);
         stanzaService.client.xmppClient.pc = new RTCPeerConnection({
             iceServers: [
                 {
@@ -69,20 +72,31 @@ function ChatMediaModal(props) {
                 });
             }, 1000);
         }
+
     }, []);
 
+    //通话计时
+    const timerStart  = ()=>{
+        console.log("timer start");
+
+    };
+    const timerStop = ()=>{
+        return () => {clearInterval(timerRef.current)};
+    }
     const registerPeerEvents = () => {
         stanzaService.client.xmppClient.pc.onaddstream = event => {
             console.log('--->On Add Remote Stream');
             setRemoteStream(event.stream);
             InCallManager.setSpeakerphoneOn(true);
             setStatus(CONNECTED_STATUS);
+            switchView();
         };
+
         stanzaService.client.xmppClient.pc.onremovestream = event => {
-            console.log('--->On Add Remote Stream');
+            console.log('--->On Remove Remote Stream');
             //setRemoteStream(event.stream);
             InCallManager.setSpeakerphoneOn(true);
-            setStatus(CONNECTED_STATUS);
+            setStatus(DISCONNECT_STATUS);
         };
         stanzaService.client.xmppClient.pc.oniceconnectionstatechange = state => {
             console.log('oniceconnectionstatechange:',state);
@@ -103,8 +117,10 @@ function ChatMediaModal(props) {
                 stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
             }
         };
+
     }
     const initLocalVideo = () => {
+
         mediaDevices.getUserMedia({
                 audio: true,
                 video: {
@@ -120,9 +136,13 @@ function ChatMediaModal(props) {
             setLocalStream(stream);
             stanzaService.client.xmppClient.pc.addStream(stream);
             console.log(stanzaService.client.xmppClient.pc.getLocalStreams());
+
         }).catch(error => {
 
         });
+
+
+
     };
 
     const accept = async () => {
@@ -150,7 +170,10 @@ function ChatMediaModal(props) {
         stanzaService.client.xmppClient.pc.close();
         stanzaService.client.xmppClient.pc.onicecandidate = null;
         stanzaService.client.xmppClient.pc.ontrack = null;
+
         navigation.goBack()
+
+
     }
 
     const toggleMute = () => {
@@ -185,6 +208,25 @@ function ChatMediaModal(props) {
         })
         setIsCameraFront(!isCameraFront);
     }
+    const switchView =() =>{
+        if(isLocalBig){
+            setLocalStream(stanzaService.client.xmppClient.pc.getRemoteStreams()[0]);
+            setRemoteStream(stanzaService.client.xmppClient.pc.getLocalStreams()[0]);
+        }else{
+            setLocalStream(stanzaService.client.xmppClient.pc.getLocalStreams()[0]);
+            setRemoteStream(stanzaService.client.xmppClient.pc.getRemoteStreams()[0]);
+        }
+        setIsLocalBig(!isLocalBig);
+
+    }
+    const formatTime = (count) =>{
+        const s = count % 60;
+        const m = parseInt(count / 60) % 60;
+        const h = parseInt(count / 60 / 60);
+        clearInterval(timerRef.current);
+        return h.toString().padStart(2,'0')+":"+m.toString().padStart(2,'0')+":"+s.toString().padStart(2,'0');
+    }
+
 
     let renderUserView;
     let renderButtonView;
@@ -226,12 +268,13 @@ function ChatMediaModal(props) {
             <Text style={{color:"red"}}>免提</Text>
         </View>)
 
-    if(status==1) {//状态为未接通
+    if(status==DISCONNECT_STATUS) {//状态为未接通
         renderUserView = (
             <View style={{flex:1,alignItems:"center",paddingTop:0}}>
                 <Thumbnail style={{width:120,height:120,borderRadius:60}} source={{ uri: 'https://s.gravatar.com/avatar/49f4297846f70d6c070b0b604dd99175?size=100&default=retro' }} />
-                <Text style={{color:"white",paddingTop:10,fontSize:24}}>euser2</Text>
+                <Text style={{color:"white",paddingTop:10,fontSize:24}}>{timerCount}</Text>
             </View>);
+
         if(isIncoming){//被叫
             renderButtonView = (
                 <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
@@ -245,7 +288,6 @@ function ChatMediaModal(props) {
                 </View>
             );
         }else {//主叫
-            console.log("主叫")
             if(isAudio){//语音通话
                 renderButtonView = (
                     <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
@@ -267,8 +309,10 @@ function ChatMediaModal(props) {
                         </View>
                     </View>
                 )
+
             }
         }
+
     }else{
         //状态为接通
         if(isAudio){
@@ -294,21 +338,24 @@ function ChatMediaModal(props) {
             )
         }
         renderUserView = (
-            <View></View>
+            <View style={{flex:1,alignItems:"flex-end"}}>
+                <RTCView style={{backgroundColor:"transparent",width:width/3,height:height/3,}} mirror={true} streamURL={remoteStream ? remoteStream.toURL() : ''}/>
+            </View>
         )
+
 
     }
     return (
         <View style={styles.wrapper}>
 
-            <View  style={styles.back}>
-                <RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={localStream ? localStream.toURL() : ''}/>
-                <RTCView style={{backgroundColor:"black",width:width,height:height/2}} mirror={true} streamURL={remoteStream ? remoteStream.toURL() : ''}/>
-            </View>
-            <View style={styles.front}>
-                <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center",backgroundColor:"transparent"}}>
+            <TouchableOpacity ref={bigView} style={styles.back}>
+                <RTCView style={{width:width,height:height}} mirror={true} streamURL={localStream ? localStream.toURL() :  ''}/>
+                <Text>{timerCount}</Text>
+            </TouchableOpacity>
+            <View style={[styles.front,{backgroundColor:status==DISCONNECT_STATUS?"grey":"transparent"}]}>
+                <TouchableOpacity ref={smallView} onPress={switchView} style={{flex:1,flexDirection:"row",justifyContent:status==DISCONNECT_STATUS?"center":"flex-start",backgroundColor:"transparent"}}>
                     {renderUserView}
-                </View>
+                </TouchableOpacity>
                 <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
                     {renderButtonView}
                 </View>
@@ -331,7 +378,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width:width,
         height:height,
-        zIndex: 1
+        zIndex: 10
     },
     circleIcon:{
         flexDirection:"column",

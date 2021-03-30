@@ -9,8 +9,8 @@ class LoginScreen extends Component {
     constructor(props) {
         super(props)
         this.state={
-            userName:'13164503107',
-            password:''
+            userName:'13164533222',
+            password:'123456'
         }
 
     }
