@@ -167,11 +167,14 @@ class StanzaService {
             store.dispatch(setStatus(2));
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_CANDIDATE){
             console.log("---->add ice candidate",msgBodyObj);
-            this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ", e)});
-        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
-            console.log("----> offer",msgBodyObj.text)
+            if(this.pc != null){
+                this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ")});
+            }
+        }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER || msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_VIDEO_OFFER){
+            console.log("----> offer",msg)
+
             if(this.pc == null && !msg.delay){
-                this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+                this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text,offerType:msgBodyObj.type})
             }else{
                 msgObj = {...msgObj,text:"未接通话",system:true}
                 store.dispatch(pushMessage(msgObj));
@@ -185,7 +188,6 @@ class StanzaService {
             this.pc.onicecandidate = null;
             this.pc.ontrack = null;
             this.pc = null;
-            console.log(this.navigation);
             this.navigation.goBack();
         }
     }

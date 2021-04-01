@@ -42,7 +42,11 @@ function ChatMediaModal(props) {
     const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
         hangOffSession} = props;
     const isIncoming = route.params.isIncoming || false;
+    const mediaType = route.params.offerType;
     const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
+    if(mediaType==stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER){
+        setIsAudio(true);
+    }
 
 
     useEffect(() => {
@@ -56,6 +60,7 @@ function ChatMediaModal(props) {
 
         initLocalVideo();
         registerPeerEvents();
+        console.log(new RTCSessionDescription(route.params.offer).toJSON());
         if(route.params.isIncoming){
 
         }else {
@@ -63,7 +68,7 @@ function ChatMediaModal(props) {
                 stanzaService.client.xmppClient.pc.createOffer().then(offer => {
                     stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
                         const msgObj = {
-                            type: stanzaConst.MSG_TYPE_MEDIA_OFFER,
+                            type: isAudio?stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER:stanzaConst.MSG_TYPE_MEDIA_VIDEO_OFFER,
                             text: offer
                         }
                         console.log(offer);
@@ -91,13 +96,6 @@ function ChatMediaModal(props) {
             setStatus(CONNECTED_STATUS);
             switchView();
         };
-
-        stanzaService.client.xmppClient.pc.onremovestream = event => {
-            console.log('--->On Remove Remote Stream');
-            //setRemoteStream(event.stream);
-            InCallManager.setSpeakerphoneOn(true);
-            setStatus(DISCONNECT_STATUS);
-        };
         stanzaService.client.xmppClient.pc.oniceconnectionstatechange = state => {
             console.log('oniceconnectionstatechange:',state);
         };
@@ -120,8 +118,13 @@ function ChatMediaModal(props) {
 
     }
     const initLocalVideo = () => {
-
-        mediaDevices.getUserMedia({
+        let deviceOptions ;
+        if(isAudio){
+            deviceOptions={
+                audio: true
+            }
+        }else{
+            deviceOptions={
                 audio: true,
                 video: {
                     audio: true,
@@ -132,7 +135,9 @@ function ChatMediaModal(props) {
                         facingMode: ("user")
                     }
                 }
-        }).then(stream => {
+            }
+        }
+        mediaDevices.getUserMedia(deviceOptions).then(stream => {
             setLocalStream(stream);
             stanzaService.client.xmppClient.pc.addStream(stream);
             console.log(stanzaService.client.xmppClient.pc.getLocalStreams());
@@ -146,7 +151,7 @@ function ChatMediaModal(props) {
     };
 
     const accept = async () => {
-        console.log(route.params.offer);
+
 
         stanzaService.client.xmppClient.pc.setRemoteDescription(new RTCSessionDescription(route.params.offer)).then(()=>{
             return stanzaService.client.xmppClient.pc.createAnswer();

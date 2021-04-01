@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {Animated,Easing,Image,View,TextInput,TouchableOpacity} from 'react-native';
+import {Animated,Easing,Image,View,Text,TouchableOpacity} from 'react-native';
 import { Container, Content, Icon,List, ListItem, Left, Body, Right, Thumbnail } from 'native-base';
 import {
     Bubble,GiftedChat,Message,MessageText
@@ -32,6 +32,12 @@ class ChatItemScreen extends Component {
             <MessageText
                 {...props}
             />
+        )
+    };
+    renderTime = (props) => {
+        console.log(props.currentMessage);
+        return (
+            <Text>{new Date(props.currentMessage.createdAt).toLocaleTimeString()}</Text>
         )
     };
     renderMessage =(props)=> {
@@ -92,6 +98,8 @@ class ChatItemScreen extends Component {
                     showUserAvatar={true}
                     onSend={messages=>this.sendTextMessage(route.params.dialog.dialogId,messages)}
                     user={currentUserReducer.user}
+                    timeFormat = "HH:mm"
+                    dateFormat = "YYYY-MM-DD"
                 />
             </View>
         )
