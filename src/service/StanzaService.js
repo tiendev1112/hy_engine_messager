@@ -170,12 +170,18 @@ class StanzaService {
             this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ", e)});
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_OFFER){
             console.log("----> offer",msgBodyObj.text)
-            if(this.pc == null){
+            if(this.pc == null && !msg.delay){
                 this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text})
+            }else{
+                msgObj = {...msgObj,text:"未接通话",system:true}
+                store.dispatch(pushMessage(msgObj));
+                store.dispatch(sortDialogs(msgObj,1));
             }
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_LEAVE){
             console.log("----> level");
-
+            msgObj = {...msgObj,text:"结束通话",system:true}
+            store.dispatch(pushMessage(msgObj));
+            store.dispatch(sortDialogs(msgObj,1));
             this.pc.onicecandidate = null;
             this.pc.ontrack = null;
             this.pc = null;

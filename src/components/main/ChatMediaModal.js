@@ -53,7 +53,7 @@ function ChatMediaModal(props) {
                 },
             ],
         });
-        console.log(stanzaService.client.xmppClient);
+
         initLocalVideo();
         registerPeerEvents();
         if(route.params.isIncoming){
@@ -70,7 +70,7 @@ function ChatMediaModal(props) {
                         stanzaService.client.xmppClient.sendMessage({to: jid, body: JSON.stringify(msgObj)});
                     });
                 });
-            }, 1000);
+            }, 4000);
         }
 
     }, []);
@@ -164,7 +164,9 @@ function ChatMediaModal(props) {
         const msgObj ={
             type:stanzaConst.MSG_TYPE_MEDIA_LEAVE
         }
-        stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+        if(status == CONNECTED_STATUS){
+            stanzaService.client.xmppClient.sendMessage({to:jid,body:JSON.stringify(msgObj)});
+        }
         setRemoteStream(null);
         setLocalStream(null);
         stanzaService.client.xmppClient.pc.close();
@@ -338,9 +340,9 @@ function ChatMediaModal(props) {
             )
         }
         renderUserView = (
-            <View style={{flex:1,alignItems:"flex-end"}}>
+            <TouchableOpacity ref={smallView} onPress={switchView} style={{alignItems:"flex-start",backgroundColor:"transparent",width:width/3,height:height/3}}>
                 <RTCView style={{backgroundColor:"transparent",width:width/3,height:height/3,}} mirror={true} streamURL={remoteStream ? remoteStream.toURL() : ''}/>
-            </View>
+            </TouchableOpacity>
         )
 
 
@@ -353,9 +355,9 @@ function ChatMediaModal(props) {
                 <Text>{timerCount}</Text>
             </TouchableOpacity>
             <View style={[styles.front,{backgroundColor:status==DISCONNECT_STATUS?"grey":"transparent"}]}>
-                <TouchableOpacity ref={smallView} onPress={switchView} style={{flex:1,flexDirection:"row",justifyContent:status==DISCONNECT_STATUS?"center":"flex-start",backgroundColor:"transparent"}}>
+                <View  style={{flex:1,flexDirection:"row",justifyContent:status==DISCONNECT_STATUS?"center":"flex-end",backgroundColor:"transparent"}}>
                     {renderUserView}
-                </TouchableOpacity>
+                </View>
                 <View style={{flex:1,flexDirection:"row",justifyContent:"center",alignItems:"center"}}>
                     {renderButtonView}
                 </View>
