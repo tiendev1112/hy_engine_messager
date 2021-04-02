@@ -171,7 +171,6 @@ class StanzaService {
                 this.pc.addIceCandidate(new RTCIceCandidate(msgBodyObj.text)).then(res=>{console.log("add ice candidate success",res)}).catch(e=>{console.log("add candidate error ")});
             }
         }else if(msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER || msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_VIDEO_OFFER){
-            console.log("----> offer",msg)
 
             if(this.pc == null && !msg.delay){
                 this.navigation.navigate('chatMediaModal',{dialog:{dialogId:getUserIdFromResource(msg.from)},isIncoming:true,offer:msgBodyObj.text,offerType:msgBodyObj.type})

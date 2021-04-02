@@ -27,6 +27,12 @@ function ChatMediaModal(props) {
     const DISCONNECT_STATUS =1 ;
     const CONNECTING_STATUS =2;
     const CONNECTED_STATUS =3;
+    const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
+        hangOffSession} = props;
+    const isIncoming = route.params.isIncoming || false;
+    const mediaType = route.params.offerType;
+    const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
+
     const bigView = useRef();
     const smallView = useRef();
     const [timerCount,setTimerCount] = useState(0);
@@ -34,22 +40,19 @@ function ChatMediaModal(props) {
     const [localStream, setLocalStream] = useState({toURL: () => null});
     const [remoteStream, setRemoteStream] = useState({toURL: () => null});
     const [isLocalBig,setIsLocalBig] = useState(true);
-    const [isAudio,setIsAudio] = useState(false);
-    const [isLoudSpeaker,setIsLoudSpeaker] = useState(true);
+    const [isAudio,setIsAudio] = useState(() => {return mediaType==stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER?true:false });
+    const [isLoudSpeaker,setIsLoudSpeaker] = useState(()=>{return mediaType==stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER?false:true});
+
     const [isCameraFront,setIsCameraFront] = useState(true);
     const [isMute,setIsMute] = useState(false);
     const [status,setStatus] = useState(DISCONNECT_STATUS);
-    const {navigation,route,messageReducer,dialogReducer,chatMediaReducer,
-        hangOffSession} = props;
-    const isIncoming = route.params.isIncoming || false;
-    const mediaType = route.params.offerType;
-    const jid = route.params.dialog.dialogId+"@"+xmppConfig.host+"/mobile";
-    if(mediaType==stanzaConst.MSG_TYPE_MEDIA_AUDIO_OFFER){
-        setIsAudio(true);
-    }
+
+
+
 
 
     useEffect(() => {
+
         stanzaService.client.xmppClient.pc = new RTCPeerConnection({
             iceServers: [
                 {
@@ -92,7 +95,9 @@ function ChatMediaModal(props) {
         stanzaService.client.xmppClient.pc.onaddstream = event => {
             console.log('--->On Add Remote Stream');
             setRemoteStream(event.stream);
-            InCallManager.setSpeakerphoneOn(true);
+            if(isLoudSpeaker){
+                InCallManager.setSpeakerphoneOn(true);
+            }
             setStatus(CONNECTED_STATUS);
             switchView();
         };
@@ -119,11 +124,14 @@ function ChatMediaModal(props) {
     }
     const initLocalVideo = () => {
         let deviceOptions ;
+        console.log(isAudio,isLoudSpeaker)
         if(isAudio){
+            console.log("init audio media")
             deviceOptions={
                 audio: true
             }
         }else{
+            console.log("init video media")
             deviceOptions={
                 audio: true,
                 video: {
@@ -177,6 +185,7 @@ function ChatMediaModal(props) {
         stanzaService.client.xmppClient.pc.close();
         stanzaService.client.xmppClient.pc.onicecandidate = null;
         stanzaService.client.xmppClient.pc.ontrack = null;
+        stanzaService.client.xmppClient.pc = null;
 
         navigation.goBack()
 
@@ -298,8 +307,7 @@ function ChatMediaModal(props) {
             if(isAudio){//语音通话
                 renderButtonView = (
                     <View style={{flex:1,flexDirection:"row",justifyContent:"space-around",alignItems:"center"}}>
-                        {muteToggleButton}
-                        {acceptButton}
+                        {hangOffButton}
                         {louderSpeakerToggleButton}
                     </View>
                 );
