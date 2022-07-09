@@ -1,16 +1,16 @@
-import React, {Component} from 'react';
-import {View, Dimensions, StyleSheet, Alert} from 'react-native';
-import { Button, Container, Content, Icon, Left, Body, Right, List, ListItem, Thumbnail, Separator,Text } from 'native-base'
-import {connect} from 'react-redux';
-import {cleanLogin} from '../../actions/LoginAction'
+import React, { Component } from 'react';
+import { View, Dimensions, StyleSheet, Alert } from 'react-native';
+import { Button, Container, Content, Icon, Left, Body, Right, List, ListItem, Thumbnail, Separator, Text } from 'native-base'
+import { connect } from 'react-redux';
+import { cleanLogin } from '../../actions/LoginAction'
 
-const {height,width} = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 class SettingPanel extends Component {
     constructor(props) {
         super(props);
-        this.state={
-            confirmModalVisible:false
+        this.state = {
+            confirmModalVisible: false
         }
 
 
@@ -19,56 +19,56 @@ class SettingPanel extends Component {
     componentDidMount() {
 
     }
-    exitApp=()=> {
+    exitApp = () => {
         this.setState({ confirmModalVisible: true })
     }
 
-    onPressOk=()=> {
+    onPressOk = () => {
         this.setState({ confirmModalVisible: false })
         this.props.cleanLogin()
     }
 
-    onPressCancel=()=> {
+    onPressCancel = () => {
         this.setState({ confirmModalVisible: false })
     }
 
     render() {
-        const {navigation} = this.props;
+        const { navigation } = this.props;
 
         return (
             <Container>
                 <Content style={styles.container}>
                     <List style={styles.list}>
-                        <Separator style={{height:40}} >
+                        <Separator style={{ height: 40 }} >
                             <Text>Accounts</Text>
                         </Separator>
-                        <ListItem icon onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
                             <Left>
                                 <Thumbnail small source={{ uri: 'http://myxxjs.com/assets/img/logo.png' }} />
                             </Left>
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>user2</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>user2</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon  last onPress={()=>{}}>
+                        <ListItem icon last onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>add account</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>add account</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <Separator style={{height:40}} >
+                        <Separator style={{ height: 40 }} >
                             <Text>Status</Text>
                         </Separator>
-                        <ListItem icon last onPress={()=>{}}>
+                        <ListItem icon last onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Automatic</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Automatic</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
@@ -76,58 +76,58 @@ class SettingPanel extends Component {
                         </ListItem>
 
 
-                        <Separator style={{height:40}} >
+                        <Separator style={{ height: 40 }} >
                             <Text>Settings</Text>
                         </Separator>
-                        <ListItem icon onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Chats</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Chats</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon  onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Contacts</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Contacts</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon  onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Notifications</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Notifications</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon  onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Experimental</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Experimental</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon  onPress={()=>{}}>
+                        <ListItem icon onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>Media</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>Media</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
                             </Right>
                         </ListItem>
-                        <ListItem icon last onPress={()=>{}}>
+                        <ListItem icon last onPress={() => { }}>
 
                             <Body>
-                            <Text style={{ fontSize: 14, color: '#777'}}>About</Text>
+                                <Text style={{ fontSize: 14, color: '#777' }}>About</Text>
                             </Body>
                             <Right>
                                 <Icon name="ios-chevron-forward" />
@@ -136,17 +136,17 @@ class SettingPanel extends Component {
 
                     </List>
                     <Button full style={styles.button} onPress={this.exitApp}>
-                        <Text style={ styles.buttonTitle}>退出</Text>
+                        <Text style={styles.buttonTitle}>quit</Text>
                     </Button>
                 </Content>
 
-                {this.state.confirmModalVisible&& Alert.alert(
-                '',
-                '确认退出应用？',
-                [
-                {text: '确定', onPress:this.onPressOk},
-                    {text: '取消',onPress:this.onPressCancel},
-                ],
+                {this.state.confirmModalVisible && Alert.alert(
+                    '',
+                    'Confirm to exit the app?',
+                    [
+                        { text: 'Sure', onPress: this.onPressOk },
+                        { text: 'Cancel', onPress: this.onPressCancel },
+                    ],
                 )
                 }
             </Container>
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
     },
-    separator:{
-        height:20
+    separator: {
+        height: 20
     }
 })
 const mapStateToProps = (state) => {

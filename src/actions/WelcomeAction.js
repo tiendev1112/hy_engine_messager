@@ -1,45 +1,45 @@
-import {getItemObject, setItemObject} from '../util/LocalStorage';
+import { getItemObject, setItemObject } from '../util/LocalStorage';
 import LocalStorageKey from '../util/LocalStorageKey';
-import {apiHost} from '../config/index';
+import { apiHost } from '../config/index';
 import httpRequest from '../util/HttpRequest';
 import * as LoginAction from "./LoginAction"
-import {Alert} from "react-native";
-import {setCurrentUser} from './CurrentUserActions';
+import { Alert } from "react-native";
+import { setCurrentUser } from './CurrentUserActions';
 import stanzaService from '../service'
 
 
 export const SHOW_WELCOME = 'SHOW_WELCOME';
 
 /**
- *  如果获取用户信息失败，跳转到登录，换token，如果更新token失败，跳转到登录，如果更新token成功，继续流程
+ *  If the acquisition of user information fails, go to login, change the token, if the update token fails, go to login, if the update token is successful, continue the process
  */
-export const show = (props) => async (dispatch) =>  {
-   //读取local
+export const show = (props) => async (dispatch) => {
+    //read local
     const localUserObj = await getItemObject(LocalStorageKey.USER);
-    if(localUserObj) {
-        //换取token
-        const {accessToken, userId,status,userName,jid,impwd} = localUserObj
+    if (localUserObj) {
+        //Exchange token
+        const { accessToken, userId, status, userName, jid, impwd } = localUserObj
         const url = `${apiHost}/user/${userId}/token/${accessToken}`
         // console.log('url', url)
         const res = await httpRequest.get(url)
-       //console.log('res', res)
-       //成功 换accessToken 更新reducer 更新LocalStorage
+        //console.log('res', res)
+        //Successfully change accessToken, update reducer, update LocalStorage
         if (res.success) {
-            const userObj = {accessToken : res.result.accessToken, status , userId , userName, jid, impwd}
-            await setItemObject(LocalStorageKey.USER,userObj);
-            dispatch(setCurrentUser({...userObj,avatar: 'http://myxxjs.com/assets/img/logo.png'}));
-            stanzaService.config({username:userObj.jid,password:userObj.impwd});
+            const userObj = { accessToken: res.result.accessToken, status, userId, userName, jid, impwd }
+            await setItemObject(LocalStorageKey.USER, userObj);
+            dispatch(setCurrentUser({ ...userObj, avatar: 'http://myxxjs.com/assets/img/logo.png' }));
+            stanzaService.config({ username: userObj.jid, password: userObj.impwd });
             stanzaService.client.init(props.navigation);
             console.log(stanzaService.client.xmppClient);
             stanzaService.client.xmppClient.connect();
-            dispatch({type: LoginAction.loginInit, payload: {user:userObj}})
-            props.navigation.reset({index:0,routes:[{name:'mainStack'}]});
+            dispatch({ type: LoginAction.loginInit, payload: { user: userObj } })
+            props.navigation.reset({ index: 0, routes: [{ name: 'mainStack' }] });
         } else {
-            props.navigation.reset({index:0,routes:[{name:'loginStack'}]});
+            props.navigation.reset({ index: 0, routes: [{ name: 'loginStack' }] });
 
         }
-    }else {
-        props.navigation.reset({index:0,routes:[{name:'loginStack'}]});
+    } else {
+        props.navigation.reset({ index: 0, routes: [{ name: 'loginStack' }] });
     }
 }
 

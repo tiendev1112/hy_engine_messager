@@ -1,9 +1,11 @@
 import StanzaService from './StanzaService';
 
 class Main {
-    config(params){
-        this.client = new StanzaService(params.username,params.password);
+    config(params) {
+        this.client = new StanzaService(params.username, params.password);
     }
 }
+
 const main = new Main();
-module.exports = main;
+
+export default main

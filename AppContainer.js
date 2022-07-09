@@ -1,20 +1,20 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {AppState} from 'react-native';
-import {Button} from 'native-base';
+import { AppState } from 'react-native';
+import { Button } from 'native-base';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import localStorageKey from './src/util/LocalStorageKey'
-import {getItemValue,getItemObject,getAllKeys} from './src/util/LocalStorage'
-import {LoginScreen,ChatItemScreen,ChatMediaModal,ChatPanel,ContactPanel,SettingPanel,WelcomeScreen} from './src/components';
-import {store} from './src/store';
-import {updateDialogUnread} from './src/actions/DialogAction'
+import { getItemValue, getItemObject, getAllKeys } from './src/util/LocalStorage'
+import { LoginScreen, ChatItemScreen, ChatMediaModal, ChatPanel, ContactPanel, SettingPanel, WelcomeScreen, PocScreen } from './src/components';
+import { store } from './src/store';
+import { updateDialogUnread } from './src/actions/DialogAction'
 const stanzaService = require('./src/service');
 
 
@@ -25,31 +25,36 @@ const Tab = createBottomTabNavigator();
 const MainStack = createStackNavigator();
 
 
-const BottomTabScreen = ()=>{
-    return(
+const BottomTabScreen = () => {
+    return (
         <Tab.Navigator tabBarOptions={{
             activeTintColor: '#3578e5',
         }}>
+            <Tab.Screen name="Poc" component={PocScreen} options={{
+                tabBarIcon: ({ color, size }) => (
+                    <Icon name="videocam" color={color} size={size} />
+                ),
+            }} />
             <Tab.Screen name="Chat" component={ChatPanel} options={{
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="ios-home" color={color} size={size} />
                 ),
-            }}/>
+            }} />
             <Tab.Screen name="Contacts" component={ContactPanel} options={{
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="ios-person" color={color} size={size} />
                 ),
-            }}/>
+            }} />
             <Tab.Screen name="Settings" component={SettingPanel} options={{
                 tabBarIcon: ({ color, size }) => (
                     <Icon name="ios-settings" color={color} size={size} />
                 ),
-            }}/>
+            }} />
         </Tab.Navigator>
     )
 }
 
-const MainStackScreen = (props)=>{
+const MainStackScreen = (props) => {
 
     return (
         <MainStack.Navigator initialRouteName="login">
@@ -62,25 +67,28 @@ const MainStackScreen = (props)=>{
                 name="chatItemScreen"
                 component={ChatItemScreen}
                 options={({ navigation, route }) => ({
-                title: route.params.title,
-                headerTitleStyle: {
-                    color: '#3578e5',
-                },
-                headerRight: (props)=>{
-                    return <Button  transparent {...props} onPress={() => {
-                        navigation.navigate('chatMediaModal',{dialog:route.params.dialog})
-                    }}>
+                    title: route.params.title,
+                    headerTitleStyle: {
+                        color: '#3578e5',
+                    },
+                    headerRight: (props) => {
+                        return <Button transparent {...props} onPress={() => {
+                            navigation.navigate('chatMediaModal', { dialog: route.params.dialog })
+                        }}>
 
-                        <Icon name='call' size={30} color='#3578e5'/>
-                    </Button>},
-                headerLeft: (props)=>{
-                    return <Button  transparent {...props} onPress={() => {
-                        navigation.goBack();
-                        store.dispatch(updateDialogUnread(route.params.dialog));
-                    }}>
+                            <Icon name='call' size={30} color='#3578e5' />
+                        </Button>
+                    },
+                    headerLeft: (props) => {
+                        return <Button transparent {...props} onPress={() => {
+                            navigation.goBack();
+                            store.dispatch(updateDialogUnread(route.params.dialog));
+                        }}>
 
-                        <Icon name='chevron-back-outline' size={30} color='#3578e5'/>
-                    </Button>}})}
+                            <Icon name='chevron-back-outline' size={30} color='#3578e5' />
+                        </Button>
+                    }
+                })}
 
             />
             <MainStack.Screen
@@ -91,9 +99,9 @@ const MainStackScreen = (props)=>{
         </MainStack.Navigator>
     )
 }
-const LoginStackScreen = ()=>{
-    return(
-        <LoginStack.Navigator  initialRouteName="login">
+const LoginStackScreen = () => {
+    return (
+        <LoginStack.Navigator initialRouteName="login">
             <LoginStack.Screen
                 name="login"
                 component={LoginScreen}
@@ -102,9 +110,9 @@ const LoginStackScreen = ()=>{
         </LoginStack.Navigator>
     )
 }
-const WelcomeStackScreen = ()=>{
-    return(
-        <WelcomeStack.Navigator  initialRouteName="welcome">
+const WelcomeStackScreen = () => {
+    return (
+        <WelcomeStack.Navigator initialRouteName="welcome">
             <WelcomeStack.Screen
                 name="welcome"
                 component={WelcomeScreen}
@@ -115,7 +123,7 @@ const WelcomeStackScreen = ()=>{
 
 }
 
-const RootStackScreen = (props)=>{
+const RootStackScreen = (props) => {
     return (
         <RootStack.Navigator mode="modal" initialRouteName={props.initialRouteName}>
             <RootStack.Screen name="welcomeStack" component={WelcomeStackScreen} options={{ headerShown: false }} />
@@ -132,7 +140,7 @@ class AppContainer extends Component {
 
     constructor(props) {
         super(props);
-        this.state={
+        this.state = {
             appState: AppState.currentState
         }
     }
@@ -153,18 +161,18 @@ class AppContainer extends Component {
     }
     _handleAppStateChange = (nextAppState) => {
 
-        if(nextAppState =='active'){
-            console.log('navigation active ');
-            if(stanzaService.client != undefined && stanzaService.client.xmppClient != undefined){
-                stanzaService.client.xmppClient.connect();
-            }
-        }else{
-            console.log('navigation inactive');
-            if(stanzaService.client !=undefined && stanzaService.client.xmppClient !=undefined){
-                stanzaService.client.xmppClient.disconnect();
-            }
-        }
-        this.setState({appState: nextAppState});
+        // if (nextAppState == 'active') {
+        //     console.log('navigation active ');
+        //     if (stanzaService.client != undefined && stanzaService.client.xmppClient != undefined) {
+        //         stanzaService.client.xmppClient.connect();
+        //     }
+        // } else {
+        //     console.log('navigation inactive');
+        //     if (stanzaService.client != undefined && stanzaService.client.xmppClient != undefined) {
+        //         stanzaService.client.xmppClient.disconnect();
+        //     }
+        // }
+        // this.setState({ appState: nextAppState });
     }
 
     render() {
@@ -172,7 +180,7 @@ class AppContainer extends Component {
         return (
             <SafeAreaProvider>
                 <NavigationContainer >
-                    <RootStackScreen initialRouteName="welcomeStack"/>
+                    <RootStackScreen initialRouteName="mainStack" />
                 </NavigationContainer>
             </SafeAreaProvider>
         )
