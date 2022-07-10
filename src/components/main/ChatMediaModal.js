@@ -32,7 +32,8 @@ function ChatMediaModal(props) {
     console.log("props", props)
     const isIncoming = route.params.isIncoming || false;
     const mediaType = route.params.offerType;
-    const jid = route.params.dialog.dialogId + "@" + xmppConfig.host + "/mobile";
+    // const jid = route.params.dialog.dialogId + "@" + xmppConfig.host + "/mobile";
+    const jid = route.params.dialog;
     console.log("jid", jid)
     const bigView = useRef();
     const smallView = useRef();

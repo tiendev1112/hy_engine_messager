@@ -50,18 +50,18 @@ class StanzaService {
             this.xmppClient.on('presence', this.presenceListener);
             this.xmppClient.on('iq', this.iqListener);
             this.xmppClient.on('iq:get:disco', this.iqDiscoListener);
-            // this.xmppClient.on('groupchat', this.groupchatListener);
+            this.xmppClient.on('groupchat', this.groupchatListener);
             // this.xmppClient.on('chat', this.chatListener);
             // this.xmppClient.on('message', this.messageListener);
             // this.xmppClient.on('message:sent', this.messageSentListener);
 
             // this.xmppClient.on('jingle:incoming', this.jingleIncomingListener);
-            // this.xmppClient.on('jingle:ringing', this.jingleRingListener);
+            this.xmppClient.on('jingle:ringing', this.jingleRingListener);
             this.xmppClient.on('jingle:outgoing', this.jingleOutgoListener);
-            // this.xmppClient.on('jingle:terminated', this.jingleTerminatedListener);
-            // this.xmppClient.on('iq:set:jingle', (data) => {
-            //     console.log('iq:set:jingle', data);
-            // });
+            this.xmppClient.on('jingle:terminated', this.jingleTerminatedListener);
+            this.xmppClient.on('iq:set:jingle', (data) => {
+                console.log('iq:set:jingle', data);
+            });
             this.xmppClient.on('jingle:created', (session) => {
                 console.log('jingle:created', session);
             });
@@ -179,13 +179,13 @@ class StanzaService {
             if (this.pc == null && !msg.delay) {
                 this.navigation.navigate('chatMediaModal', { dialog: { dialogId: getUserIdFromResource(msg.from) }, isIncoming: true, offer: msgBodyObj.text, offerType: msgBodyObj.type })
             } else {
-                msgObj = { ...msgObj, text: "未接通话", system: true }
+                msgObj = { ...msgObj, text: "Missed call", system: true }
                 store.dispatch(pushMessage(msgObj));
                 store.dispatch(sortDialogs(msgObj, 1));
             }
         } else if (msgBodyObj.type == stanzaConst.MSG_TYPE_MEDIA_LEAVE) {
             console.log("----> level");
-            msgObj = { ...msgObj, text: "结束通话", system: true }
+            msgObj = { ...msgObj, text: "end the call", system: true }
             store.dispatch(pushMessage(msgObj));
             store.dispatch(sortDialogs(msgObj, 1));
             this.pc.onicecandidate = null;
@@ -196,10 +196,10 @@ class StanzaService {
     }
     jingleIncomingListener(session) {
         console.log("jingle incoming");
-        console.log(session.parent.sessions);
+        console.log("session", session);
         store.dispatch(setIncomingFlag(true));
-        store.dispatch(setMediaSession(session.parent.sessions[0]));
-        this.navigation.navigate('chatMediaModal', { dialog: "user2", sid: session.sid, isIncoming: true })
+        store.dispatch(setMediaSession(session.parent.sessions[`${session.sid}`]));
+        this.navigation.navigate('chatMediaModal', { dialog: session?.peerID, sid: session.sid, isIncoming: true })
     }
     jingleOutgoListener(session) {
         console.log("jingle outgoing");
@@ -214,9 +214,9 @@ class StanzaService {
     messageSentListener(msg) {
         console.log("Message Sent>> ")
         if (msg.receipt) {
-            //自动回复收到信息
+            //Automatic reply to received message
         } else {
-            //计入reducer
+            //Include reducer
             let msgObj = new Message({
                 dialogId: getUserIdFromJID(msg.to),
                 _id: msg.id,

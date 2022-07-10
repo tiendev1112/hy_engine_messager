@@ -28,6 +28,8 @@ import {
 import stanzaService from "../../service";
 import { xmppConfig } from "../../config";
 import * as stanzaConst from "../../service/StanzaConst";
+import { store } from "../../store";
+import { setMediaSession } from "../../actions/ChatMediaAction";
 
 const localMedia = [];
 
@@ -46,7 +48,7 @@ export default function PocScreen() {
     "wss://xmpp.mektou.be:5281/xmpp-websocket"
   );
   const [fullJid, setFullJid] = useState("");
-  const [peerJid, onPeerJid] = useState("3376829@xmpp.mektou.be/5IwOVRaE9x4x");
+  const [peerJid, onPeerJid] = useState("3376829@xmpp.mektou.be/ulA5uhBHy0BU");
   const [localStream, setLocalStream] = useState({ toURL: () => null });
   const [remoteStream, setRemoteStream] = useState({ toURL: () => null });
   const [calling, setCalling] = useState(false);
@@ -55,6 +57,10 @@ export default function PocScreen() {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  useEffect(() => {
+    console.log("localStream", localStream.toURL());
+    console.log("remoteStream", remoteStream.toURL());
+  }, [localStream, remoteStream]);
 
   const onConnect = () => {
     console.log("on Connecting");
@@ -73,64 +79,42 @@ export default function PocScreen() {
       setIsLoadingConnect(false);
       console.log("client.jid", stanzaService.client.xmppClient.jid);
     });
-    stanzaService.client.xmppClient.on("jingle:incoming", function (session) {
-      console.log("jingle incoming");
-      console.log(session.parent.sessions);
-    });
-
+    stanzaService.client.xmppClient.on(
+      "jingle:incoming",
+      function (session: any) {
+        console.log("jingle incoming");
+        console.log("session", session);
+        console.log("session.parent.sessions[0]", session.parent.sessions[0]);
+        // session.accept();
+        // store.dispatch(setMediaSession(session.parent.sessions[0]));
+        accept(session?.peerID, session?.pc?.remoteDescription);
+      }
+    );
     stanzaService.client.xmppClient.connect();
   };
-  const onReset = () => {
-    onChangeUsername("");
-    onChangePassword("");
-    onChangeUrl("");
-  };
-  const onCall = () => {
-    stanzaService.client.xmppClient.pc = new RTCPeerConnection({
-      iceServers: xmppConfig.iceServers,
-    });
-    initLocalVideo();
-    registerPeerEvents();
-    setTimeout(() => {
-      stanzaService.client.xmppClient.pc.createOffer().then((offer) => {
-        stanzaService.client.xmppClient.pc
-          .setLocalDescription(offer)
-          .then(() => {
-            const msgObj = {
-              type: stanzaConst.MSG_TYPE_MEDIA_VIDEO_OFFER,
-              text: offer,
-            };
-            console.log(offer);
-            stanzaService.client.xmppClient.sendMessage({
-              to: peerJid,
-              body: JSON.stringify(msgObj),
-            });
-          });
+  const accept = async (jidCallTo: string, offer: any) => {
+    console.log("jidCallTo", jidCallTo);
+    console.log("offer", offer);
+    stanzaService.client.xmppClient.pc
+      .setRemoteDescription(new RTCSessionDescription(offer))
+      .then(() => {
+        return stanzaService.client.xmppClient.pc.createAnswer();
+      })
+      .then((answer) => {
+        stanzaService.client.xmppClient.pc.setLocalDescription(answer);
+        const msgObj = {
+          type: stanzaConst.MSG_TYPE_MEDIA_ANSWER,
+          text: answer,
+        };
+        console.log(answer);
+
+        stanzaService.client.xmppClient.sendMessage({
+          to: jidCallTo,
+          body: JSON.stringify(msgObj),
+        });
       });
-    }, 4000);
-  };
-  const registerPeerEvents = () => {
-    stanzaService.client.xmppClient.pc.onaddstream = (event) => {
-      console.log("--->On Add Remote Stream");
-      setRemoteStream(event.stream);
-      // if (isLoudSpeaker) {
-      //   InCallManager.setSpeakerphoneOn(true);
-      // }
-      // setStatus(CONNECTED_STATUS);
-      // switchView();
-      setLocalStream(stanzaService.client.xmppClient.pc.getLocalStreams()[0]);
-      setRemoteStream(stanzaService.client.xmppClient.pc.getRemoteStreams()[0]);
-    };
-    stanzaService.client.xmppClient.pc.oniceconnectionstatechange = (state) => {
-      console.log("oniceconnectionstatechange:", state);
-    };
-    stanzaService.client.xmppClient.pc.onconnectionstatechange = (state) => {
-      console.log("onconnectionstatechange:", state);
-    };
-    stanzaService.client.xmppClient.pc.onconnectionstatechange = (state) => {
-      console.log("onconnectionstatechange:", state);
-    };
-    stanzaService.client.xmppClient.pc.onicecandidate = (event) => {
+
+    stanzaService.client.xmppClient.pc.onicecandidate = (event: any) => {
       console.log("---> send candidate");
       if (event.candidate) {
         const msgObj = {
@@ -138,11 +122,62 @@ export default function PocScreen() {
           text: event.candidate,
         };
         stanzaService.client.xmppClient.sendMessage({
-          to: peerJid,
+          to: jidCallTo,
           body: JSON.stringify(msgObj),
         });
       }
     };
+  };
+  const onReset = () => {
+    onChangeUsername("");
+    onChangePassword("");
+    onChangeUrl("");
+  };
+  useEffect(() => {
+    if (fullJid) {
+      stanzaService.client.xmppClient.pc = new RTCPeerConnection({
+        iceServers: xmppConfig.iceServers,
+      });
+      initLocalVideo();
+      registerPeerEvents();
+    }
+  }, [fullJid]);
+
+  const registerPeerEvents = () => {
+    stanzaService.client.xmppClient.pc.onaddstream = (event: any) => {
+      console.log("--->On Add Remote Stream");
+      setRemoteStream(event.stream);
+      // if (isLoudSpeaker) {
+      //   InCallManager.setSpeakerphoneOn(true);
+      // }
+      // setStatus(CONNECTED_STATUS);
+      // switchView();
+      // setLocalStream(stanzaService.client.xmppClient.pc.getLocalStreams()[0]);
+      // setRemoteStream(stanzaService.client.xmppClient.pc.getRemoteStreams()[0]);
+    };
+    stanzaService.client.xmppClient.pc.oniceconnectionstatechange = (
+      state: any
+    ) => {
+      console.log("oniceconnectionstatechange:", state);
+    };
+    stanzaService.client.xmppClient.pc.onconnectionstatechange = (
+      state: any
+    ) => {
+      console.log("onconnectionstatechange:", state);
+    };
+    // stanzaService.client.xmppClient.pc.onicecandidate = (event: any) => {
+    //   console.log("---> send candidate");
+    //   if (event.candidate) {
+    //     const msgObj = {
+    //       type: stanzaConst.MSG_TYPE_MEDIA_CANDIDATE,
+    //       text: event.candidate,
+    //     };
+    //     stanzaService.client.xmppClient.sendMessage({
+    //       to: fullJid,
+    //       body: JSON.stringify(msgObj),
+    //     });
+    //   }
+    // };
   };
   const initLocalVideo = () => {
     const deviceOptions: MediaStreamConstraints = {
@@ -159,7 +194,7 @@ export default function PocScreen() {
     };
     mediaDevices
       .getUserMedia(deviceOptions)
-      .then((stream) => {
+      .then((stream: any) => {
         setLocalStream(stream);
         stanzaService.client.xmppClient.pc.addStream(stream);
         console.log(stanzaService.client.xmppClient.pc.getLocalStreams());
@@ -168,24 +203,20 @@ export default function PocScreen() {
         console.log("error", error);
       });
   };
-  const accept = async () => {
-    stanzaService.client.xmppClient.pc
-      .setRemoteDescription(new RTCSessionDescription(route.params.offer))
-      .then(() => {
-        return stanzaService.client.xmppClient.pc.createAnswer();
-      })
-      .then((answer) => {
-        stanzaService.client.xmppClient.pc.setLocalDescription(answer);
+  const onCall = () => {
+    console.log("on Call");
+    stanzaService.client.xmppClient.pc.createOffer().then((offer: any) => {
+      stanzaService.client.xmppClient.pc.setLocalDescription(offer).then(() => {
         const msgObj = {
-          type: stanzaConst.MSG_TYPE_MEDIA_ANSWER,
-          text: answer,
+          type: stanzaConst.MSG_TYPE_MEDIA_VIDEO_OFFER,
+          text: offer,
         };
-        console.log(answer);
         stanzaService.client.xmppClient.sendMessage({
           to: peerJid,
           body: JSON.stringify(msgObj),
         });
       });
+    });
   };
   return (
     <View>

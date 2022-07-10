@@ -50,35 +50,36 @@ class ChatItemScreen extends Component {
         )
     }
     renderBubble = props => {
-        return (
-            <Bubble
-                {...props}
-                containerToNextStyle={{
-                    left: { borderColor: '#46CF76', borderWidth: 4 },
-                    right: {},
-                }}
-                containerToPreviousStyle={{
-                    left: { borderColor: '#46CF76', borderWidth: 4 },
-                    right: { borderColor: '#46CF76', borderWidth: 4 },
-                }}
-                textStyle={{
-                    right: {
-                        color: '#fff',
-                    },
-                    left: {
-                        color: '#0f2f2f',
-                    },
-                }}
-                wrapperStyle={{
-                    right: {
-                        backgroundColor: '#46CF76',
-                    },
-                    left: {
-                        backgroundColor: '#fff',
-                    },
-                }}
-            />
-        );
+        console.log("renderBubble", renderBubble)
+        // return (
+        //     <Bubble
+        //         {...props}
+        //         containerToNextStyle={{
+        //             left: { borderColor: '#46CF76', borderWidth: 4 },
+        //             right: {},
+        //         }}
+        //         containerToPreviousStyle={{
+        //             left: { borderColor: '#46CF76', borderWidth: 4 },
+        //             right: { borderColor: '#46CF76', borderWidth: 4 },
+        //         }}
+        //         textStyle={{
+        //             right: {
+        //                 color: '#fff',
+        //             },
+        //             left: {
+        //                 color: '#0f2f2f',
+        //             },
+        //         }}
+        //         wrapperStyle={{
+        //             right: {
+        //                 backgroundColor: '#46CF76',
+        //             },
+        //             left: {
+        //                 backgroundColor: '#fff',
+        //             },
+        //         }}
+        //     />
+        // );
     }
 
 
